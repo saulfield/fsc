@@ -28,18 +28,14 @@ let implode (xs:char list) =
 
 // Lex
 
-let rec lexInt str chars =
+let lexInt chars =
+  let rec loop str chars =  
     match chars with
     | [] -> str,[]
-    | c::rest when Char.IsDigit c -> lexInt (str @ [c]) rest
-    | c::rest -> str,chars
-
-let rec lexIdent str chars =
-    match chars with
-    | [] -> str,[]
-    | c::rest when Char.IsLetterOrDigit c ->
-        lexIdent (str @ [c]) rest
-    | c::rest -> str,chars
+    | c::rest when Char.IsDigit c -> loop (str @ [c]) rest
+    | _ -> str,chars
+  let str,rest = loop [] chars
+  Int ((implode str) |> int), rest
 
 let getIdentOrKeyword str =
   match str with
@@ -48,15 +44,21 @@ let getIdentOrKeyword str =
   | "return" -> Keyword Return
   | _ -> Identifier str
 
+let lexIdent chars =
+  let rec loop str chars =
+    match chars with
+    | [] -> str,[]
+    | c::rest when Char.IsLetterOrDigit c ->
+        loop (str @ [c]) rest
+    | _ -> str,chars
+  let str,rest = loop [] chars
+  getIdentOrKeyword (implode str), rest
+
 let lexOther chars =
   match chars with
-  | [] -> EOF, []
-  | c::rest when Char.IsLetter c || c = '_' ->
-      let str,rest = lexIdent [] chars
-      getIdentOrKeyword (implode str), rest
-  | c::rest when Char.IsDigit c -> 
-      let str,rest = lexInt [] chars
-      Int ((implode str) |> int), rest
+  | [] -> EOF,[]
+  | c::rest when Char.IsLetter c || c = '_' -> lexIdent chars
+  | c::rest when Char.IsDigit  c            -> lexInt chars
   | _ -> Unknown, chars
 
 let rec lex chars =
