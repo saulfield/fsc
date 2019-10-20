@@ -2,6 +2,11 @@
 
 // Types
 
+type Keyword =
+  | Return
+  | Void
+  | Int
+
 type Token =
   | OpenBrace
   | CloseBrace
@@ -10,6 +15,7 @@ type Token =
   | Semicolon
   | Identifier of string
   | Int of int
+  | Keyword of Keyword
   | EOF
   | Unknown
 
@@ -35,12 +41,19 @@ let rec lexIdent str chars =
         lexIdent (str @ [c]) rest
     | c::rest -> str,chars
 
+let getIdentOrKeyword str =
+  match str with
+  | "int"    -> Keyword Keyword.Int
+  | "void"   -> Keyword Void
+  | "return" -> Keyword Return
+  | _ -> Identifier str
+
 let lexOther chars =
   match chars with
   | [] -> EOF, []
   | c::rest when Char.IsLetter c || c = '_' ->
       let str,rest = lexIdent [] chars
-      Identifier (implode str), rest
+      getIdentOrKeyword (implode str), rest
   | c::rest when Char.IsDigit c -> 
       let str,rest = lexInt [] chars
       Int ((implode str) |> int), rest
@@ -55,10 +68,9 @@ let rec lex chars =
   | ')'::rest -> CloseParen::(lex rest)
   | ';'::rest -> Semicolon::(lex rest)
   | c::rest ->
-      if Char.IsWhiteSpace c 
-      then lex rest
+      if Char.IsWhiteSpace c then lex rest
       else
-        let token,rest = (lexOther chars)
+        let token,rest = lexOther chars
         token::(lex rest)
 
 // Main
@@ -69,6 +81,8 @@ let main argv =
   let text = IO.File.ReadAllText testFilename
   let chars = Seq.toList text
   let tokens = lex chars
-  printfn "%A" tokens
+
+  for token in tokens do
+    printfn "%A" token
 
   0
