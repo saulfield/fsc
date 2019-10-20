@@ -1,9 +1,9 @@
 		section .text
 		global main
-main:
-		mov rax, 5
-		ret
 		global _start
+main:
+		mov rax, 3
+		ret
 _start:
 		call main
 		mov rdi, rax
