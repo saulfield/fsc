@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
-    <Compile Include="main.fs" />
+    <Compile Include="AST.fs" />
+    <Compile Include="Lex.fs" />
+    <Compile Include="Parse.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
-
 </Project>
