@@ -7,6 +7,7 @@
     <Compile Include="AST.fs" />
     <Compile Include="Lex.fs" />
     <Compile Include="Parse.fs" />
+    <Compile Include="CodeGen.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>

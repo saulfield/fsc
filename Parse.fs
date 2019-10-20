@@ -18,7 +18,7 @@ let expect expected tokens =
 
 let parseExp tokens =
   match tokens with
-  | (Token.Int intVal)::rest -> AST.IntExp intVal, rest
+  | (Token.Int intVal)::rest -> AST.IntExp(intVal), rest
   | _ -> parseError "expected int literal"
 
 let parseStmt tokens =
@@ -27,7 +27,7 @@ let parseStmt tokens =
     | KeywordReturn::rest -> parseExp rest
     | _ -> parseError "invalid statement"
   let tokens = expect Semicolon tokens
-  AST.ReturnStmt exp,tokens
+  AST.ReturnStmt(exp),tokens
 
 let parseFuncDecl tokens =
   // return type
@@ -56,5 +56,5 @@ let parseFuncDecl tokens =
 
 let parse toks =
   match toks with
-  | KeywordInt::rest -> parseFuncDecl toks
+  | KeywordInt::_ -> parseFuncDecl toks
   | _ -> parseError "expected 'int' keyword"
