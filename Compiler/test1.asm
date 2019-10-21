@@ -2,7 +2,8 @@
 		global main
 		global _start
 main:
-		mov rax, 3
+		mov rax, 1
+		neg rax
 		ret
 _start:
 		call main

@@ -11,10 +11,10 @@ let main argv =
   let chars = Seq.toList text
 
   let tokens = lex chars
-  // for token in tokens do printfn "%A" token
+  for token in tokens do printfn "%A" token
   
   let ast,_ = parse tokens
-  // printfn "%A" ast
+  printfn "%A" ast
 
   gen ast "test1.asm"
 

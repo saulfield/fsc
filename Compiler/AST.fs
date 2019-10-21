@@ -1,6 +1,11 @@
 module AST
 
+type UnaryOp =
+  | Neg
+  | Not
+
 type Exp =
+  | UnaryExp of UnaryOp * Exp
   | IntExp of int
 
 type Stmt =

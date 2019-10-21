@@ -6,7 +6,8 @@ open System
 // <program> ::= <function>
 // <function> ::= "int" <id> "(" "void" ")" "{" <statement> "}"
 // <statement> ::= "return" <exp> ";"
-// <exp> ::= <int>
+// <exp> ::= <unary_op> <exp> | <int>
+// <unary_op> ::= "!" | "-"
 
 let parseError msg =
   failwithf "Parse error: %s" msg
@@ -16,9 +17,15 @@ let expect expected tokens =
   | tok::rest when tok = expected -> rest
   | _ -> failwithf "expected %A" expected
 
-let parseExp tokens =
+let rec parseExp tokens =
   match tokens with
   | (Token.Int intVal)::rest -> AST.IntExp(intVal), rest
+  | Token.Bang::rest ->
+      let exp,rest = parseExp rest
+      AST.UnaryExp(AST.Not, exp), rest
+  | Token.Minus::rest ->
+      let exp,rest = parseExp rest
+      AST.UnaryExp(AST.Neg, exp), rest
   | _ -> parseError "expected int literal"
 
 let parseStmt tokens =

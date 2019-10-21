@@ -7,11 +7,13 @@ type Token =
   | OpenParen
   | CloseParen
   | Semicolon
+  | Bang
+  | Minus
   | Identifier of string
   | Int of int
   | KeywordReturn
   | KeywordVoid
-  | KeywordInt
+  | KeywordInt 
   | EOF
   | Unknown
 
@@ -61,6 +63,8 @@ let rec lex chars =
   | '('::rest -> OpenParen::(lex rest)
   | ')'::rest -> CloseParen::(lex rest)
   | ';'::rest -> Semicolon::(lex rest)
+  | '!'::rest -> Bang::(lex rest)
+  | '-'::rest -> Minus::(lex rest)
   | c::rest ->
       if Char.IsWhiteSpace c then lex rest
       else

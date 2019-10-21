@@ -30,6 +30,9 @@ let gen ast filename =
   let mov a b =
     emit ("mov " + operandToString a + ", " + operandToString b)
 
+  let neg a =
+    emit ("neg " + operandToString a)
+
   let syscall () =
     emit "syscall"
 
@@ -39,6 +42,21 @@ let gen ast filename =
   let call funcName =
     emit ("call " + funcName)
 
+  let rec genExp exp =
+    match exp with
+      | IntExp intVal -> mov RAX (Imm intVal)
+      | UnaryExp(op,exp) ->
+        match op with
+        | Neg ->
+          genExp exp
+          neg RAX
+        | Not -> failwith ""
+
+  let genStmt stmt =
+    match stmt with
+    | ReturnStmt returnStmt -> genExp returnStmt
+      
+  // start of code generation      
   let globalSymbols = ["_start"]
 
   let funcName, stmt = 
@@ -51,12 +69,6 @@ let gen ast filename =
 
   let globalSymbols = funcName::globalSymbols
 
-  let returnVal =
-    match stmt with
-    | ReturnStmt returnStmt ->
-      match returnStmt with
-      | IntExp intVal -> intVal
-  
   // instructions
   emit "section .text"
 
@@ -66,7 +78,7 @@ let gen ast filename =
 
   // main function
   emitLabel funcName
-  mov RAX (Imm returnVal)
+  genStmt stmt
   ret()
 
   // entry point
