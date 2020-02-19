@@ -19,11 +19,11 @@ let expect expected tokens =
 
 let rec parseExp tokens =
   match tokens with
-  | (Token.Int intVal)::rest -> AST.IntExp(intVal), rest
-  | Token.Bang::rest ->
+  | (TkIntConstant intVal)::rest -> AST.IntExp(intVal), rest
+  | TkBang::rest ->
       let exp,rest = parseExp rest
       AST.UnaryExp(AST.Not, exp), rest
-  | Token.Minus::rest ->
+  | TkMinus::rest ->
       let exp,rest = parseExp rest
       AST.UnaryExp(AST.Neg, exp), rest
   | _ -> parseError "expected int literal"
@@ -31,37 +31,37 @@ let rec parseExp tokens =
 let parseStmt tokens =
   let exp,tokens = 
     match tokens with
-    | KeywordReturn::rest -> parseExp rest
+    | TkKeywordReturn::rest -> parseExp rest
     | _ -> parseError "invalid statement"
-  let tokens = expect Semicolon tokens
+  let tokens = expect TkSemicolon tokens
   AST.ReturnStmt(exp),tokens
 
 let parseFuncDecl tokens =
   // return type
   let tokens =
     match tokens with
-    | KeywordInt::rest -> rest
+    | TkTypeInt::rest -> rest
     | _ -> parseError "unexpected type"
 
   // identifier
   let ident,tokens =
     match tokens with
-    | (Identifier ident)::rest -> ident,rest
+    | (TkIdentifier ident)::rest -> ident,rest
     | _ -> parseError "expected Identifier"
 
   // params
-  let tokens = expect OpenParen tokens
-  let tokens = expect KeywordVoid tokens
-  let tokens = expect CloseParen tokens
+  let tokens = expect TkOpenParen tokens
+  let tokens = expect TkTypeVoid tokens
+  let tokens = expect TkCloseParen tokens
 
   // body
-  let tokens = expect OpenBrace tokens
+  let tokens = expect TkOpenBrace tokens
   let stmt,tokens = parseStmt tokens
-  let tokens = expect CloseBrace tokens
+  let tokens = expect TkCloseBrace tokens
 
   { Ident=ident; Stmt=stmt },tokens
 
 let parse toks =
   match toks with
-  | KeywordInt::_ -> parseFuncDecl toks
+  | TkTypeInt::_ -> parseFuncDecl toks
   | _ -> parseError "expected 'int' keyword"
