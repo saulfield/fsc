@@ -79,5 +79,55 @@ int main(void) {
   0 || 1; // => 1 (Logical or)
   0 || 0; // => 0
 
+  ///////////////////////////////////////
+  // Control Structures
+  ///////////////////////////////////////
+
+  if (0) {
+    printf("I am never run\n");
+  } else if (0) {
+    printf("I am also never run\n");
+  } else {
+    printf("I print\n");
+  }
+
+  // While loops exist
+  int ii = 0;
+  while (ii < 10) { //ANY value less than ten is true.
+    printf("%d, ", ii++); // ii++ increments ii AFTER using its current value.
+  } // => prints "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "
+
+  printf("\n");
+
+  // *****NOTES*****:
+  // Loops and Functions MUST have a body. If no body is needed:
+  int i;
+  for (i = 0; i <= 5; i++) {
+    ; // use semicolon to act as the body (null statement)
+  }
+  // Or
+  for (i = 0; i <= 5; i++);
+
+  // branching with multiple choices: switch()
+  switch (a) {
+  case 0: // labels need to be integral *constant* expressions (such as enums)
+    printf("Hey, 'a' equals 0!\n");
+    break; // if you don't break, control flow falls over labels
+  case 1:
+    printf("Huh, 'a' equals 1!\n");
+    break;
+    // Be careful - without a "break", execution continues until the
+    // next "break" is reached.
+  case 3:
+  case 4:
+    printf("Look at that.. 'a' is either 3, or 4\n");
+    break;
+  default:
+    // if `some_integral_expression` didn't match any of the labels
+    fputs("Error!\n", stderr);
+    exit(-1);
+    break;
+  }
+
   return 0;
 }

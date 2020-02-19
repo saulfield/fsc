@@ -6,7 +6,7 @@ open System
 
 [<EntryPoint>]
 let main argv =
-  let testFilename = "../Examples/example.c"
+  let testFilename = "./Examples/lex-test.c"
   let text = IO.File.ReadAllText testFilename
   let chars = Seq.toList text
 

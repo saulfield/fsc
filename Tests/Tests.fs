@@ -3,28 +3,24 @@ namespace Tests
 open NUnit.Framework
 open Lex
 open Parse
+open System
 
 #nowarn "3242"
 
-type ParsingTests () =
+type Tests () =
 
   let log (msg : obj) = 
     NUnit.Framework.TestContext.WriteLine msg
-
-  let testParse text =
-    let chars = Seq.toList text
-    let tokens = lex chars
-    let ast,_ = parse tokens
-    ()
 
   [<SetUp>]
   member this.Setup () =
     ()
 
   [<Test>]
-  member this.TestReturn () =
-    let text = "
-    int main(void) {
-        return -1;
-    }"
-    testParse text
+  member this.TestLexer () =
+    let testFilename = __SOURCE_DIRECTORY__ + "/../Examples/lex-test.c"
+    let text = IO.File.ReadAllText testFilename
+    let chars = Seq.toList text
+
+    let tokens = lex chars
+    for token in tokens do printfn "%A" token

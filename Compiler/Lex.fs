@@ -53,6 +53,7 @@ type Token =
   | TkOpenSquareBracket
   | TkCloseSquareBracket
   | TkSemicolon
+  | TkColon
   | TkComma
 
 let implode (xs:char list) =
@@ -139,6 +140,7 @@ let rec lex chars =
   | '('::rest -> TkOpenParen::(lex rest)
   | ')'::rest -> TkCloseParen::(lex rest)
   | ';'::rest -> TkSemicolon::(lex rest)
+  | ':'::rest -> TkColon::(lex rest)
   | ','::rest -> TkComma::(lex rest)
   | '!'::'='::rest -> TkNotEquals::(lex rest)
   | '!'::rest -> TkBang::(lex rest)

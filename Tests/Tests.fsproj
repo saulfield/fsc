@@ -11,6 +11,6 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
   </ItemGroup>
   <ItemGroup>
-  <ProjectReference Include="../Compiler/Compiler.fsproj" />
-</ItemGroup>
+    <ProjectReference Include="../Compiler/Compiler.fsproj" />
+  </ItemGroup>
 </Project>
