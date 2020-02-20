@@ -1,4 +1,4 @@
-# FSC
+# SimpC
 
 This is a compiler for a subset of C, generating x64 assembly.
 

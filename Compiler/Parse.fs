@@ -45,15 +45,9 @@ let getTypeFromToken token =
   | TkTypeVoid   -> TypeVoid
   | _ -> parseError "expected a type"
 
-let parseTopLevel (tokens: Token list) =
-  let declType = getTypeFromToken tokens.Head
-  let ident,tokens' =
-    match tokens.Tail with
-    | (TkIdentifier ident)::rest -> ident,rest
-    | _ -> parseError "expected Identifier"
-
+let parseFunDecl declType ident tokens =
   // params
-  let tokens' = expect TkOpenParen tokens'
+  let tokens' = expect TkOpenParen tokens
   let tokens' = expect TkTypeVoid tokens'
   let tokens' = expect TkCloseParen tokens'
 
@@ -63,6 +57,22 @@ let parseTopLevel (tokens: Token list) =
   let tokens' = expect TkCloseBrace tokens'
 
   AST.FunDecl {Ident = ident; Stmt = stmt; Type=declType}, tokens'
+
+let parseVarDecl declType ident tokens = 
+  let tokens' = expect TkSemicolon tokens
+  AST.VarDecl {Ident = ident; Type = declType}, tokens'
+
+let parseTopLevel (tokens: Token list) =
+  let declType = getTypeFromToken tokens.Head
+  let ident,tokens' =
+    match tokens.Tail with
+    | (TkIdentifier ident)::rest -> ident,rest
+    | _ -> parseError "expected Identifier"
+
+  match tokens'.Head with
+  | TkOpenParen -> parseFunDecl declType ident tokens'
+  | TkSemicolon -> parseVarDecl declType ident tokens'
+  | _ -> parseError "unexpected token in declaration"
 
 let rec parseProgram tokens =
   match tokens with
