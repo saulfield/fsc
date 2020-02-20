@@ -36,36 +36,42 @@ let parseStmt tokens =
   let tokens = expect TkSemicolon tokens
   AST.ReturnStmt(exp),tokens
 
-let parseFuncDecl tokens =
-  // return type
-  let tokens =
-    match tokens with
-    | TkTypeInt::rest -> rest
-    | _ -> parseError "unexpected type"
+let getTypeFromToken token =
+  match token with
+  | TkTypeChar   -> TypeChar
+  | TkTypeDouble -> TypeDouble
+  | TkTypeFloat  -> TypeFloat
+  | TkTypeInt    -> TypeInt
+  | TkTypeVoid   -> TypeVoid
+  | _ -> parseError "expected a type"
 
-  // identifier
-  let ident,tokens =
-    match tokens with
+let parseTopLevel (tokens: Token list) =
+  let declType = getTypeFromToken tokens.Head
+  let ident,tokens' =
+    match tokens.Tail with
     | (TkIdentifier ident)::rest -> ident,rest
     | _ -> parseError "expected Identifier"
 
   // params
-  let tokens = expect TkOpenParen tokens
-  let tokens = expect TkTypeVoid tokens
-  let tokens = expect TkCloseParen tokens
+  let tokens' = expect TkOpenParen tokens'
+  let tokens' = expect TkTypeVoid tokens'
+  let tokens' = expect TkCloseParen tokens'
 
   // body
-  let tokens = expect TkOpenBrace tokens
-  let stmt,tokens = parseStmt tokens
-  let tokens = expect TkCloseBrace tokens
+  let tokens' = expect TkOpenBrace tokens'
+  let stmt,tokens' = parseStmt tokens'
+  let tokens' = expect TkCloseBrace tokens'
 
-  { Ident=ident; Stmt=stmt },tokens
+  AST.FunDecl {Ident = ident; Stmt = stmt; Type=declType}, tokens'
 
-let parse toks =
-  let parseProgram toks =
-    match toks with
-    | TkTypeInt::_ -> parseFuncDecl toks
-    | _ -> parseError "expected 'int' keyword"
+let rec parseProgram tokens =
+  match tokens with
+  | [] -> []
+  | tokens -> 
+      let decl,tokens' = parseTopLevel tokens
+      let otherDecls = parseProgram tokens'
+      decl::otherDecls
 
-  let ast,_ = parseProgram toks
-  ast
+let parse tokens =
+  let decls = parseProgram tokens
+  AST.Program decls

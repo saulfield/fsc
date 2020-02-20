@@ -7,12 +7,11 @@ type UnaryOp =
   | Not
 
  type TypeSpecifier =
-  | TypeVoid
   | TypeChar
-  | TypeBool
-  | TypeInt
-  | TypeFloat
   | TypeDouble
+  | TypeFloat
+  | TypeInt
+  | TypeVoid
 
 // Expressions
 
@@ -28,6 +27,7 @@ type Stmt =
 // Declarations
 
 type FunDecl = {
+  Type: TypeSpecifier;
   Ident:string;
   Stmt:Stmt
 }
@@ -40,3 +40,6 @@ type VarDecl = {
 type Decl =
   | VarDecl of VarDecl
   | FunDecl of FunDecl
+
+// Top level
+type Program = Program of Decl list
