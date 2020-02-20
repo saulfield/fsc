@@ -62,6 +62,10 @@ let parseFuncDecl tokens =
   { Ident=ident; Stmt=stmt },tokens
 
 let parse toks =
-  match toks with
-  | TkTypeInt::_ -> parseFuncDecl toks
-  | _ -> parseError "expected 'int' keyword"
+  let parseProgram toks =
+    match toks with
+    | TkTypeInt::_ -> parseFuncDecl toks
+    | _ -> parseError "expected 'int' keyword"
+
+  let ast,_ = parseProgram toks
+  ast

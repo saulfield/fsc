@@ -24,3 +24,15 @@ type Tests () =
 
     let tokens = lex chars
     for token in tokens do printfn "%A" token
+
+  [<Test>]
+  member this.TestParser () =
+    let testFilename = __SOURCE_DIRECTORY__ + "/../Examples/parse-test.c"
+    let text = IO.File.ReadAllText testFilename
+    let chars = Seq.toList text
+
+    let tokens = lex chars
+    for token in tokens do printfn "%A" token
+
+    let ast = parse tokens
+    printfn "%A" ast

@@ -6,15 +6,15 @@ open System
 
 [<EntryPoint>]
 let main argv =
-  let testFilename = "./Examples/lex-test.c"
+  let testFilename = __SOURCE_DIRECTORY__ + "/../Examples/parse-test.c"
   let text = IO.File.ReadAllText testFilename
   let chars = Seq.toList text
 
   let tokens = lex chars
-  for token in tokens do printfn "%A" token
+  // for token in tokens do printfn "%A" token
   
-  // let ast,_ = parse tokens
-  // printfn "%A" ast
+  let ast = parse tokens
+  printfn "%A" ast
 
   // gen ast "test1.asm"
 
