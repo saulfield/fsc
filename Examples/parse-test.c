@@ -25,8 +25,8 @@ int add_ints(int x1, int x2) {
 
 int main(void) {
   int local_x;
-  // int x = 1;
-  // int y = 2;
+  int x = 1;
+  int y = 2;
 
   /*
   int z = add_ints(x, y);

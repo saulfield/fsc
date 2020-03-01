@@ -2,7 +2,6 @@ module Parse
 
 open AST
 open Lex
-open System
 
 let parseError msg =
   failwithf "Parse error: %s" msg
@@ -44,7 +43,16 @@ let getTypeFromToken token =
   | TkTypeInt    -> TypeInt
   | TkTypeVoid   -> TypeVoid
   | _ -> parseError "expected a type"
-
+  
+let parseVarDecl declType ident tokens = 
+  match tokens with
+  | TkSemicolon::rest -> {var_decl.id=ident; varType=declType; initExp=None}, rest
+  | TkAssignment::rest ->
+    let initExp,tokens' = parseExp rest
+    let tokens' = expect TkSemicolon tokens'
+    {var_decl.id=ident; varType=declType; initExp=Some(initExp)}, tokens'
+  | _ -> failwith ""
+  
 let parseFunDecl declType ident tokens =
   let parseBody tokens =
     let rec loop items tokens =
@@ -54,9 +62,8 @@ let parseFunDecl declType ident tokens =
       | TkTypeInt::rest ->
         let declType = getTypeFromToken tokens.Head
         let varId,tokens' = expectId rest
-        let tokens' = expect TkSemicolon tokens'
-        let decl = LocalVar({id=varId; varType=declType; init=None})
-        loop (items @ [decl]) tokens'
+        let decl,tokens' = parseVarDecl declType varId tokens'
+        loop (items @ [LocalVar(decl)]) tokens'
       | _ -> 
         let stmt,tokens' = parseStmt tokens
         loop (items @ [Statement(stmt)]) tokens'
@@ -95,11 +102,7 @@ let parseFunDecl declType ident tokens =
   let tokens' = expect TkCloseBrace tokens'
 
   {id=ident; parameters=parameters; body=blockItems; funType=declType}, tokens'
-
-let parseVarDecl declType ident tokens = 
-  let tokens' = expect TkSemicolon tokens
-  {var_decl.id=ident; varType=declType; init=None}, tokens'
-
+  
 let parseTopLevel (tokens: Token list) =
   let declType = getTypeFromToken tokens.Head
   let id,tokens' = expectId tokens.Tail

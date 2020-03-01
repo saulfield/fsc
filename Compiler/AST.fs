@@ -18,7 +18,7 @@ type exp =
 type var_decl = {
   id: string
   varType: type_specifier
-  init: exp option
+  initExp: exp option
 }
 
 type statement =
