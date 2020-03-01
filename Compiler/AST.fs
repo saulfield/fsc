@@ -16,8 +16,8 @@ type exp =
   | UnaryExp of unary_op * exp
 
 type var_decl = {
-  declType: type_specifier;
-  id: string;
+  id: string
+  varType: type_specifier
   init: exp option
 }
 
@@ -31,9 +31,9 @@ type block_item =
 type param = Param of type_specifier * string
 
 type fun_decl = {
-  declType: type_specifier;
+  id: string
+  funType: type_specifier
   parameters: param list
-  id: string;
   body: block_item list
 }
 

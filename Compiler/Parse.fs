@@ -46,36 +46,59 @@ let getTypeFromToken token =
   | _ -> parseError "expected a type"
 
 let parseFunDecl declType ident tokens =
-  let rec parseBody (items:block_item list) tokens =
+  let parseBody tokens =
+    let rec loop items tokens =
+      match tokens with
+      | [] -> items,tokens
+      | TkCloseBrace::_ -> items,tokens
+      | TkTypeInt::rest ->
+        let declType = getTypeFromToken tokens.Head
+        let varId,tokens' = expectId rest
+        let tokens' = expect TkSemicolon tokens'
+        let decl = LocalVar({id=varId; varType=declType; init=None})
+        loop (items @ [decl]) tokens'
+      | _ -> 
+        let stmt,tokens' = parseStmt tokens
+        loop (items @ [Statement(stmt)]) tokens'
+    loop [] tokens
+
+  let parseParams tokens =
+    let rec parseOtherParams items tokens =
+      match tokens with
+      | TkCloseParen::_ -> items,tokens
+      | _ ->
+        let tokens' = expect TkComma tokens
+        let tokens' = expect TkTypeInt tokens'
+        let id,tokens' = expectId tokens'
+        parseOtherParams (items @ [Param(TypeInt, id)]) tokens'
+
     match tokens with
-    | [] -> items,tokens
-    | TkCloseBrace::_ -> items,tokens
+    | TkCloseParen::_ -> [],tokens  // no params
+    | TkTypeVoid::rest -> [],rest   // void type
     | TkTypeInt::rest ->
-      let declType = getTypeFromToken tokens.Head
-      let varId,tokens' = expectId rest
-      let tokens' = expect TkSemicolon tokens'
-      let decl = LocalVar({id=varId; declType=declType; init=None})
-      parseBody (items @ [decl]) tokens'
-    | _ -> 
-      let stmt,tokens' = parseStmt tokens
-      parseBody (items @ [Statement(stmt)]) tokens'
+      let id,tokens' = expectId rest
+      if tokens'.Head = TkCloseParen then
+        [Param(TypeInt, id)],tokens'
+      else
+        parseOtherParams [Param(TypeInt, id)] tokens'
+    | tok::_ -> failwithf "unexpected token %A" tok
+    | [] -> failwith "end of token stream"
 
   // params
   let tokens' = expect TkOpenParen tokens
-  let parameters = []
-  let tokens' = expect TkTypeVoid tokens'
+  let parameters,tokens' = parseParams tokens'
   let tokens' = expect TkCloseParen tokens'
 
   // body
   let tokens' = expect TkOpenBrace tokens'
-  let blockItems,tokens' = parseBody [] tokens'
+  let blockItems,tokens' = parseBody tokens'
   let tokens' = expect TkCloseBrace tokens'
 
-  {id=ident; parameters=parameters; body=blockItems; declType=declType}, tokens'
+  {id=ident; parameters=parameters; body=blockItems; funType=declType}, tokens'
 
 let parseVarDecl declType ident tokens = 
   let tokens' = expect TkSemicolon tokens
-  {var_decl.id=ident; declType=declType; init=None}, tokens'
+  {var_decl.id=ident; varType=declType; init=None}, tokens'
 
 let parseTopLevel (tokens: Token list) =
   let declType = getTypeFromToken tokens.Head

@@ -7,12 +7,21 @@
 
 int global_x;
 
-/*
-int add_ints(int x1, int x2) {
-  int result = x1 + x2;
-  return result;
+int other_func() {
+  return 0;
 }
-*/
+
+int add_one(int x) {
+  //int result = x + 1;
+  //return result;
+  return 0;
+}
+
+int add_ints(int x1, int x2) {
+  //int result = x1 + x2;
+  //return result;
+  return 0;
+}
 
 int main(void) {
   int local_x;
