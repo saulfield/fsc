@@ -1,45 +1,44 @@
 module AST
 
-// Misc
-
-type UnaryOp =
+type unary_op =
   | Neg
   | Not
 
- type TypeSpecifier =
+type type_specifier =
   | TypeChar
   | TypeDouble
   | TypeFloat
   | TypeInt
   | TypeVoid
 
-// Expressions
-
-type Exp =
-  | UnaryExp of UnaryOp * Exp
+type exp =
   | IntExp of int
+  | UnaryExp of unary_op * exp
 
-// Statements
-
-type Stmt =
-  | ReturnStmt of Exp
-
-// Declarations
-
-type FunDecl = {
-  Type: TypeSpecifier;
-  Ident:string;
-  Stmt:Stmt
+type var_decl = {
+  declType: type_specifier;
+  id: string;
+  init: exp option
 }
 
-type VarDecl = {
-  Type: TypeSpecifier;
-  Ident: string
+type statement =
+  | ReturnStmt of exp
+
+type block_item =
+  | Statement of statement
+  | LocalVar of var_decl
+
+type param = Param of type_specifier * string
+
+type fun_decl = {
+  declType: type_specifier;
+  parameters: param list
+  id: string;
+  body: block_item list
 }
 
-type Decl =
-  | VarDecl of VarDecl
-  | FunDecl of FunDecl
+type top_level =
+  | GlobalVar of var_decl
+  | Func of fun_decl
 
-// Top level
-type Program = Program of Decl list
+type program = Program of top_level list
