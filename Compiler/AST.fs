@@ -17,14 +17,18 @@ type type_specifier =
   | TypeInt
   | TypeVoid
 
+type id = ID of string
+
 type exp =
+  | StringExp of string
   | IntExp of int
-  | VarExp of string
+  | VarExp of id
   | UnaryExp of unary_op * exp
   | BinExp of exp * bin_op * exp
+  | FunCallExp of id * exp list
 
 type var_decl = {
-  id: string
+  id: id
   varType: type_specifier
   initExp: exp option
 }
@@ -36,10 +40,10 @@ type block_item =
   | Statement of statement
   | LocalVar of var_decl
 
-type param = Param of type_specifier * string
+type param = Param of type_specifier * id
 
 type fun_decl = {
-  id: string
+  id: id
   funType: type_specifier
   parameters: param list
   body: block_item list

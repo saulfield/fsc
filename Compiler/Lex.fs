@@ -1,4 +1,5 @@
 module Lex
+open AST
 open System
 
 type Token =
@@ -40,7 +41,7 @@ type Token =
   | TkMul
   | TkAmpersand
   // Constants and identifiers
-  | TkIdentifier of string
+  | TkIdentifier of id
   | TkStringConstant of string
   | TkIntConstant of int
   // Misc.
@@ -77,7 +78,7 @@ let getIdentOrKeyword str =
   | "struct"  -> TkKeywordStruct
   | "switch"  -> TkKeywordSwitch
   | "while"   -> TkKeywordWhile
-  | _ -> TkIdentifier str
+  | _ -> TkIdentifier (ID str)
 
 let rec lex chars =
   let rec skipLineComment xs =

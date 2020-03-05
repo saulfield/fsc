@@ -54,21 +54,39 @@ let getBinOp token =
   | _ -> failwithf "expected binary op: %A" token
 
 let rec parseExp tokens =
+  let parseFunCall id tokens =
+    let rec parseArgs args tokens =
+      let exp,tokens' = parseExp tokens
+      let newArgs = args @ [exp]
+      match tokens' with
+      | TkCloseParen::rest -> newArgs,rest
+      | TkComma::rest -> parseArgs newArgs rest
+      | tok::_ -> parseError "expected close paren or comma, got %A" tok
+      | _ -> parseError "expected close paren or comma"
+
+    match tokens with
+    | TkCloseParen::rest -> FunCallExp(id, []),rest
+    | _ -> 
+        let argExps,tokens' = parseArgs [] tokens
+        FunCallExp(id, argExps),tokens'
+
   let parseExpBase tokens =
     match tokens with
+    | (TkStringConstant strVal)::rest -> StringExp(strVal),rest
     | (TkIntConstant intVal)::rest -> IntExp(intVal),rest
+    | (TkIdentifier id)::TkOpenParen::rest -> parseFunCall id rest
     | (TkIdentifier id)::rest -> VarExp(id),rest
     | TkOpenParen::rest -> 
       let exp,tokens' = parseExp rest
       let tokens' = expect TkCloseParen tokens'
       exp,tokens'
     | _ -> parseError ""
-
-  let parseExpUnary tokens =
+  
+  let rec parseExpUnary tokens =
     match tokens with
     | tok::rest when isUnaryOp tok ->
         let op = getUnaryOp tok
-        let exp,rest = parseExp rest
+        let exp,rest = parseExpUnary rest
         UnaryExp(op, exp), rest
     | _ -> parseExpBase tokens
 

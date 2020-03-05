@@ -25,9 +25,9 @@ int main(void) {
   int local_x;
   int x = 1;
   int y = (1 + 1) * 2;
-
-  /*
   int z = add_ints(x, y);
+  
+  /*
   printf("%d\n", z);
 
   if (y > x) {
