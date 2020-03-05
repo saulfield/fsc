@@ -27,9 +27,9 @@ int main(void) {
   int y = (1 + 1) * 2;
   int z = add_ints(x, y);
   
-  /*
   printf("%d\n", z);
 
+  /*
   if (y > x) {
     z = 4;
   } else {

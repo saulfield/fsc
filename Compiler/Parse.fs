@@ -111,12 +111,15 @@ let rec parseExp tokens =
   parseExpAdd tokens
 
 let parseStmt tokens =
-  let exp,tokens = 
-    match tokens with
-    | TkKeywordReturn::rest -> parseExp rest
-    | _ -> parseError "invalid statement" 
-  let tokens = expect TkSemicolon tokens
-  ReturnStmt(exp),tokens
+  match tokens with
+  | TkKeywordReturn::rest ->
+      let exp,tokens' = parseExp rest
+      let tokens' = expect TkSemicolon tokens'
+      ReturnStmt(exp),tokens'
+  | _ ->
+    let exp,tokens' = parseExp tokens
+    let tokens' = expect TkSemicolon tokens'
+    ExpStmt(exp),tokens'
 
 let getTypeFromToken token =
   match token with

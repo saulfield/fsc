@@ -34,6 +34,7 @@ type var_decl = {
 }
 
 type statement =
+  | ExpStmt of exp
   | ReturnStmt of exp
 
 type block_item =
