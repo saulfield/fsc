@@ -4,6 +4,12 @@ type unary_op =
   | Neg
   | Not
 
+type bin_op =
+  | Add
+  | Sub
+  | Mul
+  | Div
+
 type type_specifier =
   | TypeChar
   | TypeDouble
@@ -13,7 +19,9 @@ type type_specifier =
 
 type exp =
   | IntExp of int
+  | VarExp of string
   | UnaryExp of unary_op * exp
+  | BinExp of exp * bin_op * exp
 
 type var_decl = {
   id: string

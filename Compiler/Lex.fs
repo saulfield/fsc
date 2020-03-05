@@ -37,7 +37,7 @@ type Token =
   | TkLessThanOrEqual
   | TkGreaterThan
   | TkGreaterThanOrEqual
-  | TkStar
+  | TkMul
   | TkAmpersand
   // Constants and identifiers
   | TkIdentifier of string
@@ -155,7 +155,7 @@ let rec lex chars =
   | '|'::rest -> TkBitwiseOr::(lex rest)
   | '&'::'&'::rest -> TkLogicalAnd::(lex rest)
   | '&'::rest -> TkAmpersand::(lex rest)
-  | '*'::rest -> TkStar::(lex rest)
+  | '*'::rest -> TkMul::(lex rest)
   | c::_ when Char.IsDigit c -> lexNum chars
   | c::_ when Char.IsLetter c || c = '_' -> lexIdentOrKeyword chars
   | c::_ -> failwithf "Lex failed with char: %A" c

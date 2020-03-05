@@ -14,18 +14,83 @@ let expect expected tokens =
 let expectId tokens =
   match tokens with
   | (TkIdentifier varId)::rest -> varId,rest
-  | _ -> parseError "expected Identifier"
+  | _ -> parseError "expected identifier"
+
+let expectInt tokens =
+  match tokens with
+  | (TkIntConstant intVal)::rest -> intVal,rest
+  | _ -> parseError "expected int constant"
+
+let isUnaryOp token =
+  match token with
+  | TkBang  -> true
+  | TkMinus -> true
+  | _ -> false
+
+let getUnaryOp token =
+  match token with
+  | TkBang  -> Not
+  | TkMinus -> Neg
+  | _ -> failwithf "expected unary op: %A" token
+
+let isAddOp token =
+  match token with
+  | TkPlus  -> true
+  | TkMinus -> true
+  | _ -> false
+
+let isMulOp token =
+  match token with
+  | TkMul -> true
+  | TkDiv -> true
+  | _ -> false
+
+let getBinOp token =
+  match token with
+  | TkPlus  -> Add
+  | TkMinus -> Sub
+  | TkMul   -> Mul
+  | TkDiv   -> Div
+  | _ -> failwithf "expected binary op: %A" token
 
 let rec parseExp tokens =
-  match tokens with
-  | (TkIntConstant intVal)::rest -> IntExp(intVal), rest
-  | TkBang::rest ->
-      let exp,rest = parseExp rest
-      UnaryExp(Not, exp), rest
-  | TkMinus::rest ->
-      let exp,rest = parseExp rest
-      UnaryExp(Neg, exp), rest
-  | _ -> parseError "expected int literal"
+  let parseExpBase tokens =
+    match tokens with
+    | (TkIntConstant intVal)::rest -> IntExp(intVal),rest
+    | (TkIdentifier id)::rest -> VarExp(id),rest
+    | TkOpenParen::rest -> 
+      let exp,tokens' = parseExp rest
+      let tokens' = expect TkCloseParen tokens'
+      exp,tokens'
+    | _ -> parseError ""
+
+  let parseExpUnary tokens =
+    match tokens with
+    | tok::rest when isUnaryOp tok ->
+        let op = getUnaryOp tok
+        let exp,rest = parseExp rest
+        UnaryExp(op, exp), rest
+    | _ -> parseExpBase tokens
+
+  let parseExpMul tokens =
+    let leftExp,tokens' = parseExpUnary tokens
+    if isMulOp tokens'.Head then
+      let op = getBinOp tokens'.Head
+      let rightExp,tokens' = parseExpUnary tokens'.Tail
+      BinExp(leftExp, op, rightExp),tokens'
+    else
+      leftExp,tokens'
+  
+  let parseExpAdd tokens =
+    let leftExp,tokens' = parseExpMul tokens
+    if isAddOp tokens'.Head then
+      let op = getBinOp tokens'.Head
+      let rightExp,tokens' = parseExpMul tokens'.Tail
+      BinExp(leftExp, op, rightExp),tokens'
+    else
+      leftExp,tokens'
+
+  parseExpAdd tokens
 
 let parseStmt tokens =
   let exp,tokens = 

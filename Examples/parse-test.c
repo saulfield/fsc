@@ -12,21 +12,19 @@ int other_func() {
 }
 
 int add_one(int x) {
-  //int result = x + 1;
-  //return result;
-  return 0;
+  int result = x + 1;
+  return result;
 }
 
 int add_ints(int x1, int x2) {
-  //int result = x1 + x2;
-  //return result;
-  return 0;
+  int result = x1 + x2;
+  return result;
 }
 
 int main(void) {
   int local_x;
   int x = 1;
-  int y = 2;
+  int y = (1 + 1) * 2;
 
   /*
   int z = add_ints(x, y);
