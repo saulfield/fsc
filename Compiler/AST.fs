@@ -33,13 +33,17 @@ type var_decl = {
   initExp: exp option
 }
 
-type statement =
-  | ExpStmt of exp
-  | ReturnStmt of exp
-
 type block_item =
   | Statement of statement
   | LocalVar of var_decl
+
+//and block = block_item list
+
+and statement =
+  | Block of block_item list
+  | ExpStmt of exp
+  | ReturnStmt of exp
+  | WhileStmt of exp * statement
 
 type param = Param of type_specifier * id
 

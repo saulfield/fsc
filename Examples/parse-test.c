@@ -36,12 +36,12 @@ int main(void) {
     z = 5;
   }
   printf("%d\n", z);
-
-  while (z > 0) {
-    z = z - 1;
-    printf("%d\n", z);
-  }
   */
+  while (0) {
+    //z = z - 1;
+    printf("%d\n", z);
+    printf("%d\n", y);
+  }
 
   return 0;
 }

@@ -52,6 +52,15 @@ let getBinOp token =
   | TkMul   -> Mul
   | TkDiv   -> Div
   | _ -> failwithf "expected binary op: %A" token
+  
+let getTypeFromToken token =
+  match token with
+  | TkTypeChar   -> TypeChar
+  | TkTypeDouble -> TypeDouble
+  | TkTypeFloat  -> TypeFloat
+  | TkTypeInt    -> TypeInt
+  | TkTypeVoid   -> TypeVoid
+  | _ -> parseError "expected a type"
 
 let rec parseExp tokens =
   let parseFunCall id tokens =
@@ -110,38 +119,37 @@ let rec parseExp tokens =
 
   parseExpAdd tokens
 
-let parseStmt tokens =
-  match tokens with
-  | TkKeywordReturn::rest ->
-      let exp,tokens' = parseExp rest
-      let tokens' = expect TkSemicolon tokens'
-      ReturnStmt(exp),tokens'
-  | _ ->
-    let exp,tokens' = parseExp tokens
-    let tokens' = expect TkSemicolon tokens'
-    ExpStmt(exp),tokens'
-
-let getTypeFromToken token =
-  match token with
-  | TkTypeChar   -> TypeChar
-  | TkTypeDouble -> TypeDouble
-  | TkTypeFloat  -> TypeFloat
-  | TkTypeInt    -> TypeInt
-  | TkTypeVoid   -> TypeVoid
-  | _ -> parseError "expected a type"
-  
 let parseVarDecl declType ident tokens = 
   match tokens with
   | TkSemicolon::rest -> {var_decl.id=ident; varType=declType; initExp=None}, rest
   | TkAssignment::rest ->
-    let initExp,tokens' = parseExp rest
+      let initExp,tokens' = parseExp rest
+      let tokens' = expect TkSemicolon tokens'
+      {var_decl.id=ident; varType=declType; initExp=Some(initExp)}, tokens'
+        | _ -> failwith ""
+
+let rec parseStmt tokens =
+  let parseWhileStmt tokens =
+    let tokens' = expect TkOpenParen tokens
+    let conditionExp,tokens' = parseExp tokens'
+    let tokens' = expect TkCloseParen tokens'
+
+    let body,tokens' = parseStmt tokens'
+
+    WhileStmt(conditionExp, body),tokens'
+
+  let parseReturnStmt tokens =
+    let exp,tokens' = parseExp tokens
     let tokens' = expect TkSemicolon tokens'
-    {var_decl.id=ident; varType=declType; initExp=Some(initExp)}, tokens'
-  | _ -> failwith ""
-  
-let parseFunDecl declType ident tokens =
-  let parseBody tokens =
-    let rec loop items tokens =
+    ReturnStmt(exp),tokens'
+
+  let parseExpStmt tokens = 
+    let exp,tokens' = parseExp tokens
+    let tokens' = expect TkSemicolon tokens'
+    ExpStmt(exp),tokens'
+
+  let parseBlock tokens =
+    let rec parseBlockItems items tokens =
       match tokens with
       | [] -> items,tokens
       | TkCloseBrace::_ -> items,tokens
@@ -149,11 +157,37 @@ let parseFunDecl declType ident tokens =
         let declType = getTypeFromToken tokens.Head
         let varId,tokens' = expectId rest
         let decl,tokens' = parseVarDecl declType varId tokens'
-        loop (items @ [LocalVar(decl)]) tokens'
+        parseBlockItems (items @ [LocalVar(decl)]) tokens'
       | _ -> 
         let stmt,tokens' = parseStmt tokens
-        loop (items @ [Statement(stmt)]) tokens'
-    loop [] tokens
+        parseBlockItems (items @ [Statement(stmt)]) tokens'
+
+    let tokens' = expect TkOpenBrace tokens
+    let stmts,tokens' = parseBlockItems [] tokens'
+    let tokens' = expect TkCloseBrace tokens'
+    Block(stmts), tokens'
+
+  match tokens with
+  | TkOpenBrace::_ -> parseBlock tokens
+  | TkKeywordReturn::rest -> parseReturnStmt rest
+  | TkKeywordWhile::rest -> parseWhileStmt rest
+  | _ -> parseExpStmt tokens
+    
+let parseFunDecl declType ident tokens =
+  let parseBody tokens =
+    let rec parseBlockItems items tokens =
+      match tokens with
+      | [] -> items,tokens
+      | TkCloseBrace::_ -> items,tokens
+      | TkTypeInt::rest ->
+        let declType = getTypeFromToken tokens.Head
+        let varId,tokens' = expectId rest
+        let decl,tokens' = parseVarDecl declType varId tokens'
+        parseBlockItems (items @ [LocalVar(decl)]) tokens'
+      | _ -> 
+        let stmt,tokens' = parseStmt tokens
+        parseBlockItems (items @ [Statement(stmt)]) tokens'
+    parseBlockItems [] tokens
 
   let parseParams tokens =
     let rec parseOtherParams items tokens =
