@@ -148,47 +148,32 @@ let rec parseStmt tokens =
     let tokens' = expect TkSemicolon tokens'
     ExpStmt(exp),tokens'
 
-  let parseBlock tokens =
-    let rec parseBlockItems items tokens =
-      match tokens with
-      | [] -> items,tokens
-      | TkCloseBrace::_ -> items,tokens
-      | TkTypeInt::rest ->
-        let declType = getTypeFromToken tokens.Head
-        let varId,tokens' = expectId rest
-        let decl,tokens' = parseVarDecl declType varId tokens'
-        parseBlockItems (items @ [LocalVar(decl)]) tokens'
-      | _ -> 
-        let stmt,tokens' = parseStmt tokens
-        parseBlockItems (items @ [Statement(stmt)]) tokens'
-
-    let tokens' = expect TkOpenBrace tokens
-    let stmts,tokens' = parseBlockItems [] tokens'
-    let tokens' = expect TkCloseBrace tokens'
-    Block(stmts), tokens'
-
   match tokens with
   | TkOpenBrace::_ -> parseBlock tokens
   | TkKeywordReturn::rest -> parseReturnStmt rest
   | TkKeywordWhile::rest -> parseWhileStmt rest
   | _ -> parseExpStmt tokens
+
+and parseBlock tokens =
+  let rec parseBlockItems items tokens =
+    match tokens with
+    | [] -> items,tokens
+    | TkCloseBrace::_ -> items,tokens
+    | TkTypeInt::rest ->
+      let declType = getTypeFromToken tokens.Head
+      let varId,tokens' = expectId rest
+      let decl,tokens' = parseVarDecl declType varId tokens'
+      parseBlockItems (items @ [LocalVar(decl)]) tokens'
+    | _ -> 
+      let stmt,tokens' = parseStmt tokens
+      parseBlockItems (items @ [Statement(stmt)]) tokens'
+
+  let tokens' = expect TkOpenBrace tokens
+  let stmts,tokens' = parseBlockItems [] tokens'
+  let tokens' = expect TkCloseBrace tokens'
+  Block(stmts), tokens'
     
 let parseFunDecl declType ident tokens =
-  let parseBody tokens =
-    let rec parseBlockItems items tokens =
-      match tokens with
-      | [] -> items,tokens
-      | TkCloseBrace::_ -> items,tokens
-      | TkTypeInt::rest ->
-        let declType = getTypeFromToken tokens.Head
-        let varId,tokens' = expectId rest
-        let decl,tokens' = parseVarDecl declType varId tokens'
-        parseBlockItems (items @ [LocalVar(decl)]) tokens'
-      | _ -> 
-        let stmt,tokens' = parseStmt tokens
-        parseBlockItems (items @ [Statement(stmt)]) tokens'
-    parseBlockItems [] tokens
-
   let parseParams tokens =
     let rec parseOtherParams items tokens =
       match tokens with
@@ -215,11 +200,7 @@ let parseFunDecl declType ident tokens =
   let tokens' = expect TkOpenParen tokens
   let parameters,tokens' = parseParams tokens'
   let tokens' = expect TkCloseParen tokens'
-
-  // body
-  let tokens' = expect TkOpenBrace tokens'
-  let blockItems,tokens' = parseBody tokens'
-  let tokens' = expect TkCloseBrace tokens'
+  let blockItems,tokens' = parseBlock tokens'
 
   {id=ident; parameters=parameters; body=blockItems; funType=declType}, tokens'
   

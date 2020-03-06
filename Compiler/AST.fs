@@ -51,7 +51,7 @@ type fun_decl = {
   id: id
   funType: type_specifier
   parameters: param list
-  body: block_item list
+  body: statement
 }
 
 type top_level =
