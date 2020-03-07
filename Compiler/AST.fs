@@ -49,6 +49,8 @@ and statement =
   | AssignStmt of id * exp
   | Block of block_item list
   | ExpStmt of exp
+  | IfStmt of exp * statement
+  | IfElseStmt of exp * statement * statement
   | WhileStmt of exp * statement
   | ReturnStmt of exp
 

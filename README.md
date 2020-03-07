@@ -2,6 +2,15 @@
 
 This is a compiler for a subset of C, generating x64 assembly.
 
+# Limitations
+
+- Only `int` type allowed
+- No preprocessor
+
+# TODO
+
+- [ ] `else if`
+
 # References
 
 - Appel - Modern Compiler Implementation in ML

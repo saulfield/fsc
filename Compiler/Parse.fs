@@ -25,7 +25,7 @@ let isUnaryOp token =
   match token with
   | TkBang  -> true
   | TkMinus -> true
-  | _ -> false
+  | _       -> false
 
 let getUnaryOp token =
   match token with
@@ -154,6 +154,18 @@ let parseVarDecl declType ident tokens =
         | _ -> failwith ""
 
 let rec parseStmt tokens =
+  let parseIfStmt tokens =
+    let tokens' = expect TkOpenParen tokens
+    let conditionExp,tokens' = parseExp tokens'
+    let tokens' = expect TkCloseParen tokens'
+    let ifBody,tokens' = parseStmt tokens'
+
+    match tokens' with
+    | TkKeywordElse::rest ->
+      let elsebody,tokens' = parseStmt rest
+      IfElseStmt(conditionExp, ifBody, elsebody),tokens'
+    | _ -> IfStmt(conditionExp, ifBody),tokens'
+
   let parseWhileStmt tokens =
     let tokens' = expect TkOpenParen tokens
     let conditionExp,tokens' = parseExp tokens'
@@ -183,6 +195,7 @@ let rec parseStmt tokens =
   | TkOpenBrace::_ -> parseBlock tokens
   | TkKeywordReturn::rest -> parseReturnStmt rest
   | TkKeywordWhile::rest -> parseWhileStmt rest
+  | TkKeywordIf::rest -> parseIfStmt rest
   | _ -> parseExpStmt tokens
 
 and parseBlock tokens =

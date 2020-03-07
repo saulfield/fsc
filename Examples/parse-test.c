@@ -27,18 +27,20 @@ int main(void) {
   int y = (1 + 1) * 2;
   int z = add_ints(x, y);
   
-  //printf("%d\n", z);
+  if (y > x)
+    printf("%d\n", z);
 
-  /*
+  if (y > x) {
+    x = 2;
+    printf("%d\n", x);
+  }
+
   if (y > x) {
     z = 4;
   } else {
     z = 5;
   }
-  */
 
-  //printf("%d\n", z);
-  
   while (z > 0) {
     z = z - 1;
     printf("%d\n", z);
