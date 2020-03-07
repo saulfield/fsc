@@ -37,13 +37,23 @@ let isAddOp token =
   match token with
   | TkPlus  -> true
   | TkMinus -> true
-  | _ -> false
+  | _       -> false
 
 let isMulOp token =
   match token with
   | TkMul -> true
   | TkDiv -> true
-  | _ -> false
+  | _     -> false
+
+let isCmpOp token =
+  match token with
+  | TkGt    -> true
+  | TkGtEq  -> true
+  | TkLt    -> true
+  | TkLtEq  -> true
+  | TkEq    -> true
+  | TkNotEq -> true
+  | _       -> false
 
 let getBinOp token =
   match token with
@@ -51,6 +61,12 @@ let getBinOp token =
   | TkMinus -> Sub
   | TkMul   -> Mul
   | TkDiv   -> Div
+  | TkGt    -> Gt
+  | TkGtEq  -> GtEq
+  | TkLt    -> Lt
+  | TkLtEq  -> LtEq
+  | TkEq    -> Eq
+  | TkNotEq -> NotEq
   | _ -> failwithf "expected binary op: %A" token
   
 let getTypeFromToken token =
@@ -117,7 +133,16 @@ let rec parseExp tokens =
     else
       leftExp,tokens'
 
-  parseExpAdd tokens
+  let parseExpCmp tokens =
+    let leftExp,tokens' = parseExpAdd tokens
+    if isCmpOp tokens'.Head then
+      let op = getBinOp tokens'.Head
+      let rightExp,tokens' = parseExpAdd tokens'.Tail
+      BinExp(leftExp, op, rightExp),tokens'
+    else
+      leftExp,tokens'
+
+  parseExpCmp tokens
 
 let parseVarDecl declType ident tokens = 
   match tokens with
@@ -133,9 +158,7 @@ let rec parseStmt tokens =
     let tokens' = expect TkOpenParen tokens
     let conditionExp,tokens' = parseExp tokens'
     let tokens' = expect TkCloseParen tokens'
-
     let body,tokens' = parseStmt tokens'
-
     WhileStmt(conditionExp, body),tokens'
 
   let parseReturnStmt tokens =
@@ -145,8 +168,16 @@ let rec parseStmt tokens =
 
   let parseExpStmt tokens = 
     let exp,tokens' = parseExp tokens
-    let tokens' = expect TkSemicolon tokens'
-    ExpStmt(exp),tokens'
+    if tokens'.Head = TkAssignment then
+      match exp with
+      | (VarExp id) -> 
+        let assignExp,tokens' = parseExp tokens'.Tail
+        let tokens' = expect TkSemicolon tokens'
+        AssignStmt(id, assignExp),tokens'
+      | _ -> failwith "left side of assignment must be a variable"
+    else
+      let tokens' = expect TkSemicolon tokens'
+      ExpStmt(exp),tokens'
 
   match tokens with
   | TkOpenBrace::_ -> parseBlock tokens

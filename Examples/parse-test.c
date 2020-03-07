@@ -27,7 +27,7 @@ int main(void) {
   int y = (1 + 1) * 2;
   int z = add_ints(x, y);
   
-  printf("%d\n", z);
+  //printf("%d\n", z);
 
   /*
   if (y > x) {
@@ -35,12 +35,13 @@ int main(void) {
   } else {
     z = 5;
   }
-  printf("%d\n", z);
   */
-  while (0) {
-    //z = z - 1;
+
+  //printf("%d\n", z);
+  
+  while (z > 0) {
+    z = z - 1;
     printf("%d\n", z);
-    printf("%d\n", y);
   }
 
   return 0;

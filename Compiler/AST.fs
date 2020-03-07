@@ -9,6 +9,12 @@ type bin_op =
   | Sub
   | Mul
   | Div
+  | Gt
+  | Lt
+  | Eq
+  | NotEq
+  | LtEq
+  | GtEq
 
 type type_specifier =
   | TypeChar
@@ -40,10 +46,11 @@ type block_item =
 //and block = block_item list
 
 and statement =
+  | AssignStmt of id * exp
   | Block of block_item list
   | ExpStmt of exp
-  | ReturnStmt of exp
   | WhileStmt of exp * statement
+  | ReturnStmt of exp
 
 type param = Param of type_specifier * id
 

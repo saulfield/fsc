@@ -22,7 +22,6 @@ type Token =
   | TkKeywordSwitch
   | TkKeywordWhile
   // Operators
-  | TkNotEquals
   | TkBang
   | TkDecrement
   | TkMinus
@@ -30,14 +29,15 @@ type Token =
   | TkPlus
   | TkDiv
   | TkAssignment
-  | TkEquals
+  | TkEq
+  | TkNotEq
   | TkLogicalOr
   | TkBitwiseOr
   | TkLogicalAnd
-  | TkLessThan
-  | TkLessThanOrEqual
-  | TkGreaterThan
-  | TkGreaterThanOrEqual
+  | TkLt
+  | TkLtEq
+  | TkGt
+  | TkGtEq
   | TkMul
   | TkAmpersand
   // Constants and identifiers
@@ -139,19 +139,19 @@ let rec lex chars =
   | ';'::rest -> TkSemicolon::(lex rest)
   | ':'::rest -> TkColon::(lex rest)
   | ','::rest -> TkComma::(lex rest)
-  | '!'::'='::rest -> TkNotEquals::(lex rest)
+  | '!'::'='::rest -> TkNotEq::(lex rest)
   | '!'::rest -> TkBang::(lex rest)
   | '-'::'-'::rest -> TkDecrement::(lex rest)
   | '-'::rest -> TkMinus::(lex rest)
   | '+'::'+'::rest -> TkIncrement::(lex rest)
   | '+'::rest -> TkPlus::(lex rest)
   | '/'::rest -> TkDiv::(lex rest)
-  | '='::'='::rest -> TkEquals::(lex rest)
+  | '='::'='::rest -> TkEq::(lex rest)
   | '='::rest -> TkAssignment::(lex rest)
-  | '>'::'='::rest -> TkGreaterThanOrEqual::(lex rest)
-  | '>'::rest -> TkGreaterThan::(lex rest)
-  | '<'::'='::rest -> TkLessThanOrEqual::(lex rest)
-  | '<'::rest -> TkLessThan::(lex rest)
+  | '>'::'='::rest -> TkGtEq::(lex rest)
+  | '>'::rest -> TkGt::(lex rest)
+  | '<'::'='::rest -> TkLtEq::(lex rest)
+  | '<'::rest -> TkLt::(lex rest)
   | '|'::'|'::rest -> TkLogicalAnd::(lex rest)
   | '|'::rest -> TkBitwiseOr::(lex rest)
   | '&'::'&'::rest -> TkLogicalAnd::(lex rest)
