@@ -71,9 +71,6 @@ let getBinOp token =
   
 let getTypeFromToken token =
   match token with
-  | TkTypeChar   -> TypeChar
-  | TkTypeDouble -> TypeDouble
-  | TkTypeFloat  -> TypeFloat
   | TkTypeInt    -> TypeInt
   | TkTypeVoid   -> TypeVoid
   | _ -> parseError "expected a type"

@@ -4,9 +4,6 @@ open System
 
 type Token =
   // Types
-  | TkTypeChar
-  | TkTypeDouble
-  | TkTypeFloat
   | TkTypeInt
   | TkTypeVoid
   // Keywords
@@ -64,9 +61,6 @@ let getIdentOrKeyword str =
   match str with
   | "int"     -> TkTypeInt
   | "void"    -> TkTypeVoid
-  | "char"    -> TkTypeChar
-  | "float"   -> TkTypeFloat
-  | "double"  -> TkTypeDouble
   | "break"   -> TkKeywordBreak
   | "case"    -> TkKeywordCase
   | "default" -> TkKeywordDefault
