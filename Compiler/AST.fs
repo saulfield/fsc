@@ -65,6 +65,6 @@ type fun_decl = {
 
 type top_level =
   | GlobalVar of var_decl
-  | Func of fun_decl
+  | Function of fun_decl
 
 type program = Program of top_level list

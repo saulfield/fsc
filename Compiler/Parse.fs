@@ -252,7 +252,7 @@ let parseTopLevel (tokens: Token list) =
   match tokens'.Head with
   | TkOpenParen -> 
     let decl,tokens' = parseFunDecl declType id tokens'
-    Func(decl),tokens'
+    Function(decl),tokens'
   | TkSemicolon -> 
     let decl,tokens' = parseVarDecl declType id tokens'
     GlobalVar(decl),tokens'
