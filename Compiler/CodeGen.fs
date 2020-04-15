@@ -51,6 +51,14 @@ let gen (ast:program) filename =
   let call funcName =
     emit ("call " + funcName)
 
+  let genBinOp op =
+    match op with
+    | Add -> emit "add rax, rcx"
+    | Sub -> emit "sub rax, rcx"
+    | Mul -> emit "mul rcx"
+    | Div -> emit "div rcx"
+    | _ -> failwith "not implemented"
+
   let rec genExp exp =
     match exp with
       | IntExp intVal -> mov RAX (Imm intVal)
@@ -60,6 +68,13 @@ let gen (ast:program) filename =
           genExp exp
           neg RAX
         | _ -> failwith "not implemented"
+      | BinExp(exp1, op, exp2) -> 
+          genExp exp1
+          emit "push rax"
+          genExp exp2
+          emit "mov rcx, rax"
+          emit "pop rax"
+          genBinOp op
       | _ -> failwith "not implemented"
        
   let genStmt stmt =

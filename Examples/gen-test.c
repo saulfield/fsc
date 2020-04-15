@@ -1,4 +1,4 @@
 
 int main(void) {
-  return 3;
+  return 5*2 - 6/3 + 1 + 6;
 }

@@ -113,31 +113,37 @@ let rec parseExp tokens =
     | _ -> parseExpBase tokens
 
   let parseExpMul tokens =
+    let rec loop tokens exp = 
+      match tokens with
+      | tok::rest when isMulOp tok ->
+        let rightExp,tokens' = parseExpUnary rest
+        let newExp = BinExp(exp, (getBinOp tok), rightExp)
+        loop tokens' newExp
+      | _ -> exp,tokens
     let leftExp,tokens' = parseExpUnary tokens
-    if isMulOp tokens'.Head then
-      let op = getBinOp tokens'.Head
-      let rightExp,tokens' = parseExpUnary tokens'.Tail
-      BinExp(leftExp, op, rightExp),tokens'
-    else
-      leftExp,tokens'
+    loop tokens' leftExp
   
   let parseExpAdd tokens =
+    let rec loop tokens exp = 
+      match tokens with
+      | tok::rest when isAddOp tok ->
+        let rightExp,tokens' = parseExpMul rest
+        let newExp = BinExp(exp, (getBinOp tok), rightExp)
+        loop tokens' newExp
+      | _ -> exp,tokens
     let leftExp,tokens' = parseExpMul tokens
-    if isAddOp tokens'.Head then
-      let op = getBinOp tokens'.Head
-      let rightExp,tokens' = parseExpMul tokens'.Tail
-      BinExp(leftExp, op, rightExp),tokens'
-    else
-      leftExp,tokens'
+    loop tokens' leftExp
 
   let parseExpCmp tokens =
+    let rec loop tokens exp = 
+      match tokens with
+      | tok::rest when isCmpOp tok ->
+        let rightExp,tokens' = parseExpAdd rest
+        let newExp = BinExp(exp, (getBinOp tok), rightExp)
+        loop tokens' newExp
+      | _ -> exp,tokens
     let leftExp,tokens' = parseExpAdd tokens
-    if isCmpOp tokens'.Head then
-      let op = getBinOp tokens'.Head
-      let rightExp,tokens' = parseExpAdd tokens'.Tail
-      BinExp(leftExp, op, rightExp),tokens'
-    else
-      leftExp,tokens'
+    loop tokens' leftExp
 
   parseExpCmp tokens
 
