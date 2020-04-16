@@ -259,10 +259,9 @@ let parseTopLevel (tokens: Token list) =
   | TkOpenParen -> 
     let decl,tokens' = parseFunDecl declType id tokens'
     Function(decl),tokens'
-  | TkSemicolon -> 
+  | _ -> 
     let decl,tokens' = parseVarDecl declType id tokens'
     GlobalVar(decl),tokens'
-  | _ -> parseError "unexpected token in declaration"
 
 let rec parseProgram tokens =
   match tokens with

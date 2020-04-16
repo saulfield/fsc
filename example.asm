@@ -1,34 +1,30 @@
-		global _start
+	global _start
+	section .data
+x: db 3
+	section .data
+y: db 0
+	section .text
 main:
-		mov rax, 5
-		push rax
-		mov rax, 2
-		mov rcx, rax
-		pop rax
-		mul rcx
-		push rax
-		mov rax, 6
-		push rax
-		mov rax, 3
-		mov rcx, rax
-		pop rax
-		div rcx
-		mov rcx, rax
-		pop rax
-		sub rax, rcx
-		push rax
-		mov rax, 1
-		mov rcx, rax
-		pop rax
-		add rax, rcx
-		push rax
-		mov rax, 6
-		mov rcx, rax
-		pop rax
-		add rax, rcx
-		ret
+	; function prologue
+	push rbp
+	mov rbp, rsp
+
+	; function body
+	push 20      		; local variable declaration
+	mov rax, [rbp + -8]	; local variable or arg
+	push rax     		; save left operand
+	mov rax, [rbp + 16]	; local variable or arg
+	mov rcx, rax 		; move right operand into rcx
+	pop rax      		; restore left operand
+	add rax, rcx
+	
+	; function epilogue
+	mov rsp, rbp
+	pop rbp
+	ret
 _start:
-		call main
-		mov rdi, rax
-		mov rax, 60
-		syscall
+	push 10
+	call main
+	mov rdi, rax 		; call exit with return code from main
+	mov rax, 60  		; sys_exit
+	syscall

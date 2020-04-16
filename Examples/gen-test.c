@@ -1,4 +1,14 @@
 
+int x = 3;
+
+/*
+int add(int x, int y) {
+  return 0;
+}
+*/
+
+int y;
+
 int main(void) {
-  return 5*2 - 6/3 + 1 + 6;
+  return x+y;
 }
