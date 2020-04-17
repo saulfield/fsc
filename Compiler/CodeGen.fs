@@ -9,11 +9,13 @@ type Operand =
   | Imm of int
 
 type VarLocation =
-  | Global of string
-  | Local of int
+  | Global of string * int  // name and initialized value
+  | Local of int            // offset from stack frame base pointer
 
-type Context = {
-  var_map: Map<string, VarLocation>
+type Environment = {
+  vars: Map<string, VarLocation>
+  functions: Map<string, bool>
+  outerEnv: Environment option
 }
 
 let operandToString operand =
@@ -23,10 +25,6 @@ let operandToString operand =
 
 let gen (ast:program) filename =
   let writer = new IO.StreamWriter(path=filename)
-  
-  let emitNoTab text =
-    printfn "%s" text
-    fprintfn writer "%s" text
 
   let emit text =
     printfn "\t%s" text
@@ -36,8 +34,7 @@ let gen (ast:program) filename =
     printfn "%s:" label
     fprintfn writer "%s:" label
 
-  let emitGlobalVar name value =
-    emit "section .data"
+  let emitGlobalVar name value =    
     printfn "%s: db %d" name value
     fprintfn writer "%s: db %d" name value
 
@@ -64,107 +61,136 @@ let gen (ast:program) filename =
     | Div -> emit "div rcx"
     | _ -> failwith "not implemented"
 
-  let lookupVar name =
-    match name with
-    | "x" -> VarLocation.Local -8
-    | "y" -> VarLocation.Local 16
-    | _ -> failwith ""
+  let rec lookupVar name env =
+    let found = env.vars.TryFind name
+    match found with
+    | Some location -> location
+    | None -> 
+      match env.outerEnv with
+      | Some nextEnv -> lookupVar name nextEnv
+      | None -> failwithf "variable not found: %s" name
 
-  let genVarExp name =
-    let location = lookupVar name
+  let genVarExp name env =
+    let location = lookupVar name env
     let code = 
       match location with
-      | Global label -> sprintf "mov rax, [%s]      \t; global variable" label
+      | Global (label,_)-> sprintf "mov rax, [%s]   \t; global variable" label
       | Local offset -> sprintf "mov rax, [rbp + %d]\t; local variable or arg" offset
     emit code
+    env
 
-  let rec genExp exp =
+  let rec genExp exp env =
     match exp with
-      | IntExp intVal -> mov RAX (Imm intVal)
+      | IntExp intVal -> 
+          mov RAX (Imm intVal)
+          env
       | UnaryExp(op,exp) ->
         match op with
         | Neg ->
-          genExp exp
+          genExp exp env |> ignore
           neg RAX
+          env
         | _ -> failwith "not implemented"
       | BinExp(exp1, op, exp2) -> 
-          genExp exp1
+          genExp exp1 env |> ignore
           emit "push rax     \t\t; save left operand"
-          genExp exp2
+          genExp exp2 env |> ignore
           emit "mov rcx, rax \t\t; move right operand into rcx"
           emit "pop rax      \t\t; restore left operand"
           genBinOp op
-      | VarExp (AST.ID name) -> genVarExp name
+          env
+      | VarExp (AST.ID name) -> genVarExp name env
       | _ -> failwith "not implemented"
        
-  let genStmt stmt =
+  let genStmt stmt env =
     match stmt with
     | ReturnStmt returnStmt -> 
         emit "; function prologue"
         emit "push rbp"
         emit "mov rbp, rsp\n"
         emit "; function body"
-        emit "push 20      \t\t; local variable declaration"
-        genExp returnStmt
-        emit ""
+        //emit "push 20      \t\t; local variable declaration"
+        genExp returnStmt env  |> ignore
+        emit "" 
         emit "; function epilogue"
         emit "mov rsp, rbp"
         emit "pop rbp"
         ret ()
+        env
     | _ -> failwith "not implemented"
       
-  let genBlockItem blockItem =
+  let genBlockItem blockItem env =
     match blockItem with
-    | Statement stmt -> genStmt stmt
+    | Statement stmt -> genStmt stmt env
     | LocalVar var -> failwith ""
 
-  let rec genBlock block =
+  let rec genBlock block env =
     match block with
-    | [] -> ()
-    | blockItem::blockItems ->
-        genBlockItem blockItem
-        genBlock blockItems
+    | [] -> env
+    | blockItem::blockItems -> genBlock blockItems (genBlockItem blockItem env)
 
-  let genFunction f =
+  let genFunction f env =
     let (AST.ID funcName) = f.id
     emit "section .text"
     emitLabel funcName
     match f.body with
-    | Block block -> genBlock block
+    | Block block -> genBlock block env
     | _ -> failwith "expected Block"
 
-  let genGlobalVar (gv:var_decl) =
+  let genGlobalVar (gv:var_decl) env =
     let (AST.ID name) = gv.id
-    match gv.initExp with
-    | None -> emitGlobalVar name 0
-    | Some (IntExp intVal) -> emitGlobalVar name intVal
-    | Some _ -> failwith "initializer must be a constant expression"
 
-  let genTopLevel tl =
+    // check if already defined
+    let found = env.vars.TryFind name
+    match (found,env.outerEnv) with
+    | (_,Some _)  -> failwith "expected global env"
+    | (Some _, _) -> failwith ("global variable already defined: " + name)
+    | (None,_) -> ()
+
+    // add to global env
+    let newVars = 
+      match gv.initExp with
+      | None -> env.vars.Add(name, Global (name,0))
+      | Some (IntExp intVal) -> env.vars.Add(name, Global (name,intVal))
+      | Some _ -> failwith "initializer must be a constant expression"
+    {env with vars=newVars}
+
+  let genTopLevel tl env =
     match tl with
-    | AST.Function f -> genFunction f
-    | AST.GlobalVar gv -> genGlobalVar gv
+    | AST.Function f -> genFunction f env
+    | AST.GlobalVar gv -> genGlobalVar gv env
 
   let emitEntryPoint () =
     emitLabel "_start"
-    emit "push 10"
+    //emit "push 10"
     call "main"
     emit "mov rdi, rax \t\t; call exit with return code from main"
     emit "mov rax, 60  \t\t; sys_exit"
     emit "syscall"
 
-  let rec genTopLevels topLevels =
+  let rec genTopLevels topLevels env =
     match topLevels with
-    | [] -> emitEntryPoint ()
-    | tl::tls ->
-        genTopLevel tl
-        genTopLevels tls
+    | [] -> env
+    | tl::tls -> genTopLevels tls (genTopLevel tl env)
 
-  // emit global symbols
+  // emit global symbols and variables
   emitGlobal "_start"
 
+  let globalEnv = { vars=Map.empty; functions=Map.empty; outerEnv=None }
+
   // emit code
-  match ast with
-  | AST.Program(program) -> genTopLevels program
+  let env =
+    match ast with
+    | AST.Program(program) -> genTopLevels program globalEnv
+
+  emitEntryPoint ()
+
+  emit ""
+  emit "; global variables"
+  emit "section .data"
+  for KeyValue(_,v) in env.vars do
+    match v with
+    | Global (label,initVal) -> emitGlobalVar label initVal
+    | _ -> failwith "expected global variable"
 
   writer.Close()

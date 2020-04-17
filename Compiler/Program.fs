@@ -14,7 +14,7 @@ let main argv =
   // for token in tokens do printfn "%A" token
   
   let ast = parse tokens
-  printfn "%A" ast
+  //printfn "%A" ast
 
   let asmFilePath = __SOURCE_DIRECTORY__ + "/../example.asm"
   gen ast asmFilePath
