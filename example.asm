@@ -1,4 +1,3 @@
-	global _start
 	section .text
 main:
 	; function prologue
@@ -6,17 +5,22 @@ main:
 	mov rbp, rsp
 
 	; function body
-	mov rax, [x]   	; global variable
+	mov rax, [y]      	; global variable
 	push rax     		; save left operand
-	mov rax, [y]   	; global variable
+	mov rax, 2
 	mov rcx, rax 		; move right operand into rcx
 	pop rax      		; restore left operand
 	add rax, rcx
+	push rax      		; initialize new variable: x
+	mov rax, [rbp + -8]	; local variable or arg
 	
 	; function epilogue
 	mov rsp, rbp
 	pop rbp
 	ret
+	
+	; entry point
+	global _start
 _start:
 	call main
 	mov rdi, rax 		; call exit with return code from main
@@ -26,4 +30,4 @@ _start:
 	; global variables
 	section .data
 x: db 3
-y: db 0
+y: db 5
