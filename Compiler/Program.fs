@@ -16,7 +16,12 @@ let main argv =
   let ast = parse tokens
   //printfn "%A" ast
 
+  let asm = gen ast
+  printfn "%s" asm
+
   let asmFilePath = __SOURCE_DIRECTORY__ + "/../example.asm"
-  gen ast asmFilePath
+  let writer = new IO.StreamWriter(path=asmFilePath)
+  writer.Write asm
+  writer.Close()
 
   0

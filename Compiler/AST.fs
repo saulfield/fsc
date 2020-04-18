@@ -26,7 +26,7 @@ type type_specifier =
 type id = ID of string
 
 type exp =
-  | StringExp of string
+  //| StringExp of string
   | IntExp of int
   | VarExp of id
   | UnaryExp of unary_op * exp

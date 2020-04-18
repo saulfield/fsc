@@ -1,3 +1,9 @@
+	; global variables
+	section .data
+x: db 3
+y: db 5
+
+	; code
 	section .text
 main:
 	; function prologue
@@ -33,8 +39,3 @@ _start:
 	mov rdi, rax 		; call exit with return code from main
 	mov rax, 60  		; sys_exit
 	syscall
-	
-	; global variables
-	section .data
-x: db 3
-y: db 5

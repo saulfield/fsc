@@ -94,7 +94,7 @@ let rec parseExp tokens =
 
   let parseExpBase tokens =
     match tokens with
-    | (TkStringConstant strVal)::rest -> StringExp(strVal),rest
+    //| (TkStringConstant strVal)::rest -> StringExp(strVal),rest
     | (TkIntConstant intVal)::rest -> IntExp(intVal),rest
     | (TkIdentifier id)::TkOpenParen::rest -> parseFunCall id rest
     | (TkIdentifier id)::rest -> VarExp(id),rest

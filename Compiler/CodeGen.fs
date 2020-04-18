@@ -2,6 +2,7 @@ module CodeGen
 
 open AST
 open System
+open System.Text
 
 type Operand =
   | RAX
@@ -23,20 +24,17 @@ let operandToString operand =
   | Imm imm -> imm.ToString()
   | _ -> operand.ToString().ToLower() 
 
-let gen (ast:program) filename =
-  let writer = new IO.StreamWriter(path=filename)
+let gen (ast:program) =
+  let sb = new StringBuilder()
 
-  let emit text =
-    printfn "\t%s" text
-    fprintfn writer "\t%s" text
+  let emit (text:string) =
+    sb.AppendFormat ("\t{0}\n", text) |> ignore
 
-  let emitLabel label =
-    printfn "%s:" label
-    fprintfn writer "%s:" label
+  let emitLabel (label:string) =
+    sb.AppendFormat ("{0}:\n", label) |> ignore
 
-  let emitGlobalVar name value =    
-    printfn "%s: db %d" name value
-    fprintfn writer "%s: db %d" name value
+  let emitGlobalVar name value =
+    sb.AppendFormat ("{0}: db {1}\n", name, value) |> ignore
 
   let emitGlobal label =
     emit ("global " + label)
@@ -84,6 +82,7 @@ let gen (ast:program) filename =
       | IntExp intVal -> 
           mov RAX (Imm intVal)
           env
+      | VarExp (AST.ID name) -> genVarExp name env
       | UnaryExp(op,exp) ->
         match op with
         | Neg ->
@@ -99,8 +98,7 @@ let gen (ast:program) filename =
           emit "pop rax      \t\t; restore left operand"
           genBinOp op
           env
-      | VarExp (AST.ID name) -> genVarExp name env
-      | _ -> failwith "not implemented"
+      | FunCallExp _ -> failwith ""
        
   let genAssignStmt name exp env =
     let varLocation = lookupVar name env
@@ -114,9 +112,13 @@ let gen (ast:program) filename =
 
   let genStmt stmt env =
     match stmt with
-    | ReturnStmt exp -> genExp exp env
     | AssignStmt (AST.ID name,exp) -> genAssignStmt name exp env
-    | _ -> failwith "not implemented"
+    | Block _ -> failwith "not implemented"
+    | ExpStmt _ -> failwith "not implemented"
+    | IfStmt _ -> failwith "not implemented"
+    | IfElseStmt _ -> failwith "not implemented"
+    | WhileStmt _ -> failwith "not implemented"
+    | ReturnStmt exp -> genExp exp env
       
   let genLocalVarDecl (var:var_decl) env =
     // check if already defined in this scope
@@ -160,8 +162,7 @@ let gen (ast:program) filename =
     let updatedEnv = {env with functions=funcMap}
     let extendedEnv = { vars=Map.empty; functions=Map.empty; outerEnv=Some(updatedEnv) }
 
-    // prologue
-    emit "section .text"
+    // prologue   
     emitLabel funcName
     emit "; function prologue"
     emit "push rbp"
@@ -211,6 +212,8 @@ let gen (ast:program) filename =
   let globalEnv = { vars=Map.empty; functions=Map.empty; outerEnv=None }
 
   // emit code
+  emit "; code"
+  emit "section .text"
   let env =
     match ast with
     | AST.Program(program) -> genTopLevels program globalEnv
@@ -226,12 +229,14 @@ let gen (ast:program) filename =
   emit "syscall"
 
   // global variables
-  emit ""
-  emit "; global variables"
-  emit "section .data"
+  let sbFinal = new StringBuilder()
+  sbFinal.Append "\t; global variables\n" |> ignore
+  sbFinal.Append "\tsection .data\n" |> ignore
   for KeyValue(_,v) in env.vars do
     match v with
-    | Global (label,initVal) -> emitGlobalVar label initVal
+    | Global (label,initVal) -> sbFinal.AppendFormat ("{0}: db {1}\n", label, initVal) |> ignore
     | _ -> failwith "expected global variable"
+  sbFinal.Append "\n" |> ignore
 
-  writer.Close()
+  sbFinal.Append (sb.ToString()) |> ignore
+  sbFinal.ToString()
