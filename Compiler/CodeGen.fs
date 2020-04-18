@@ -71,14 +71,14 @@ let gen (ast:program) filename =
       | None -> failwithf "variable not found: %s" name
 
   let genVarExp name env =
-    let location = lookupVar name env
+    let varLocation = lookupVar name env
     let code = 
-      match location with
-      | Global (label,_)-> sprintf "mov rax, [%s]      \t; global variable" label
-      | Local offset    -> sprintf "mov rax, [rbp + %d]\t; local variable or arg" offset
+      match varLocation with
+      | Global (label,_)-> sprintf "mov rax, [%s]      \t; get global variable" label
+      | Local offset    -> sprintf "mov rax, [rbp + %d]\t; get local variable or arg" offset
     emit code
     env
-
+     
   let rec genExp exp env =
     match exp with
       | IntExp intVal -> 
@@ -102,9 +102,20 @@ let gen (ast:program) filename =
       | VarExp (AST.ID name) -> genVarExp name env
       | _ -> failwith "not implemented"
        
+  let genAssignStmt name exp env =
+    let varLocation = lookupVar name env
+    let newEnv = genExp exp env
+    let code = 
+      match varLocation with
+      | Global (label,_)-> sprintf "mov [%s], rax      \t; assign global variable" label
+      | Local offset    -> sprintf "mov [rbp + %d], rax\t; assign local variable or arg" offset
+    emit code
+    newEnv
+
   let genStmt stmt env =
     match stmt with
-    | ReturnStmt returnStmt -> genExp returnStmt env
+    | ReturnStmt exp -> genExp exp env
+    | AssignStmt (AST.ID name,exp) -> genAssignStmt name exp env
     | _ -> failwith "not implemented"
       
   let genLocalVarDecl (var:var_decl) env =

@@ -5,14 +5,21 @@ main:
 	mov rbp, rsp
 
 	; function body
-	mov rax, [y]      	; global variable
+	mov rax, [y]      	; get global variable
 	push rax     		; save left operand
 	mov rax, 2
 	mov rcx, rax 		; move right operand into rcx
 	pop rax      		; restore left operand
 	add rax, rcx
-	push rax      		; initialize new variable: x
-	mov rax, [rbp + -8]	; local variable or arg
+	push rax      		; initialize new variable: z
+	mov rax, [rbp + -8]	; get local variable or arg
+	push rax     		; save left operand
+	mov rax, 1
+	mov rcx, rax 		; move right operand into rcx
+	pop rax      		; restore left operand
+	add rax, rcx
+	mov [rbp + -8], rax	; assign local variable or arg
+	mov rax, [rbp + -8]	; get local variable or arg
 	
 	; function epilogue
 	mov rsp, rbp
