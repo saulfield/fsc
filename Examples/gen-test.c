@@ -7,5 +7,11 @@ int add(int x, int y) {
 }
 
 int main(void) {
-  return 1 != 1;
+  int z = 1;
+  if (z > 0) {
+    z = 2;
+  } else {
+    z = 3;
+  }
+  return z;
 }

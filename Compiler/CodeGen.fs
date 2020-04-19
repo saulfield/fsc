@@ -140,7 +140,7 @@ let gen (ast:program) =
       | BinExp(exp1, op, exp2)        -> genBinExp exp1 op exp2 env          
       | FunCallExp (ID name, expList) -> genFuncCall name expList env
        
-  let genStmt stmt env =
+  let rec genStmt stmt env =
     let genAssignStmt name exp env =
       let varLocation = lookupVar name env
       let newEnv = genExp exp env
@@ -151,16 +151,43 @@ let gen (ast:program) =
       emit code
       newEnv
 
+    let genIfStmt exp stmt env =
+      let falseLabel = genLabel ()
+      genExp exp env |> ignore
+      emit "cmp rax, 0"
+      emit ("je " + falseLabel)
+      genStmt stmt env |> ignore
+      emitLabel falseLabel
+      env
+
+    let genIfElseStmt exp stmt1 stmt2 env =
+      let falseLabel = genLabel ()
+      let doneLabel  = genLabel ()
+      genExp exp env |> ignore
+      emit "cmp rax, 0"
+      emit ("je " + falseLabel)
+      genStmt stmt1 env |> ignore
+      emit ("jmp " + doneLabel)
+      emitLabel falseLabel
+      genStmt stmt2 env |> ignore
+      emitLabel doneLabel
+      env
+
     match stmt with
-    | AssignStmt (ID name,exp) -> genAssignStmt name exp env
-    | Block _                  -> failwith "not implemented"
-    | ExpStmt _                -> failwith "not implemented"
-    | IfStmt _                 -> failwith "not implemented"
-    | IfElseStmt _             -> failwith "not implemented"
-    | WhileStmt _              -> failwith "not implemented"
-    | ReturnStmt exp           -> genExp exp env  
+    | AssignStmt (ID name,exp)     -> genAssignStmt name exp env
+    | Block block                  -> genBlock block env
+    | ExpStmt _                    -> failwith "not implemented"
+    | IfStmt (exp,stmt)            -> genIfStmt exp stmt env
+    | IfElseStmt (exp,stmt1,stmt2) -> genIfElseStmt exp stmt1 stmt2 env
+    | WhileStmt _                  -> failwith "not implemented"
+    | ReturnStmt exp               -> genExp exp env  
   
-  let genBlockItem blockItem env =
+  and genBlock block env =
+    match block with
+    | [] -> env
+    | blockItem::blockItems -> genBlock blockItems (genBlockItem blockItem env)  
+
+  and genBlockItem blockItem env =
     let genLocalVarDecl (var:var_decl) env =
       let (ID name) = var.id
 
@@ -183,11 +210,6 @@ let gen (ast:program) =
     match blockItem with
     | Statement stmt -> genStmt stmt env
     | LocalVar var -> genLocalVarDecl var env
-
-  let rec genBlock block env =
-    match block with
-    | [] -> env
-    | blockItem::blockItems -> genBlock blockItems (genBlockItem blockItem env)  
 
   let genTopLevel tl env =
     let genFunction f env =

@@ -29,13 +29,25 @@ func_main:
 
 	; function body
 	mov rax, 1
+	push rax      		; initialize new variable: z
+	mov rax, [rbp - 8]	; get local variable: z
 	push rax     		; save left operand
-	mov rax, 1
+	mov rax, 0
 	mov rcx, rax 		; move right operand into rcx
 	pop rax      		; restore left operand
 	cmp rax, rcx 		; compare left and right operands
 	mov rax, 0   		; clear rax
-	setne al 		; save result in rax
+	setg al 		; save result in rax
+	cmp rax, 0
+	je .L0
+	mov rax, 2
+	mov [rbp + -8], rax	; assign local variable or arg
+	jmp .L1
+.L0:
+	mov rax, 3
+	mov [rbp + -8], rax	; assign local variable or arg
+.L1:
+	mov rax, [rbp - 8]	; get local variable: z
 	
 	; function epilogue
 	mov rsp, rbp
