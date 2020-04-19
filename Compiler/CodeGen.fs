@@ -173,13 +173,27 @@ let gen (ast:program) =
       emitLabel doneLabel
       env
 
+    let genWhileStmt exp stmt env =
+      let startLabel = genLabel ()
+      let doneLabel  = genLabel ()
+      emitLabel startLabel
+      emit "; while loop start"
+      genExp exp env |> ignore
+      emit "cmp rax, 0"
+      emit ("je " + doneLabel)
+      genStmt stmt env |> ignore
+      emit ("jmp " + startLabel)
+      emitLabel doneLabel
+      emit "; while loop end"
+      env
+
     match stmt with
     | AssignStmt (ID name,exp)     -> genAssignStmt name exp env
     | Block block                  -> genBlock block env
     | ExpStmt _                    -> failwith "not implemented"
     | IfStmt (exp,stmt)            -> genIfStmt exp stmt env
     | IfElseStmt (exp,stmt1,stmt2) -> genIfElseStmt exp stmt1 stmt2 env
-    | WhileStmt _                  -> failwith "not implemented"
+    | WhileStmt (exp,stmt)         -> genWhileStmt exp stmt env
     | ReturnStmt exp               -> genExp exp env  
   
   and genBlock block env =

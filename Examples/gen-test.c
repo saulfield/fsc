@@ -7,11 +7,11 @@ int add(int x, int y) {
 }
 
 int main(void) {
-  int z = 1;
-  if (z > 0) {
-    z = 2;
-  } else {
-    z = 3;
+  int z = 0;
+
+  while (z < 5) {
+    z = z + 1;
   }
+
   return z;
 }

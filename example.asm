@@ -28,25 +28,30 @@ func_main:
 	mov rbp, rsp
 
 	; function body
-	mov rax, 1
+	mov rax, 0
 	push rax      		; initialize new variable: z
+.L0:
+	; while loop start
 	mov rax, [rbp - 8]	; get local variable: z
 	push rax     		; save left operand
-	mov rax, 0
+	mov rax, 5
 	mov rcx, rax 		; move right operand into rcx
 	pop rax      		; restore left operand
 	cmp rax, rcx 		; compare left and right operands
 	mov rax, 0   		; clear rax
-	setg al 		; save result in rax
+	setl al 		; save result in rax
 	cmp rax, 0
-	je .L0
-	mov rax, 2
+	je .L1
+	mov rax, [rbp - 8]	; get local variable: z
+	push rax     		; save left operand
+	mov rax, 1
+	mov rcx, rax 		; move right operand into rcx
+	pop rax      		; restore left operand
+	add rax, rcx
 	mov [rbp + -8], rax	; assign local variable or arg
-	jmp .L1
-.L0:
-	mov rax, 3
-	mov [rbp + -8], rax	; assign local variable or arg
+	jmp .L0
 .L1:
+	; while loop end
 	mov rax, [rbp - 8]	; get local variable: z
 	
 	; function epilogue
