@@ -21,6 +21,12 @@ type Environment = {
 
 let gen (ast:program) =
   let sb = new StringBuilder()
+  let mutable labelCounter = 0
+  
+  let genLabel () =
+    let label = sprintf ".L%d" labelCounter
+    labelCounter <- labelCounter + 1
+    label
 
   let emit (text:string) =
     sb.AppendFormat ("\t{0}\n", text) |> ignore
@@ -47,13 +53,27 @@ let gen (ast:program) =
       | None -> failwithf "function not found: %s" name
      
   let rec genExp exp env =
+    let genComparisonOp op =
+      let instr =
+        match op with
+        | Gt    -> "setg"
+        | GtEq  -> "setge"
+        | Lt    -> "setl"
+        | LtEq  -> "setle"
+        | Eq    -> "sete"
+        | NotEq -> "setne"
+        | _   -> failwith "not implemented"
+      emit "cmp rax, rcx \t\t; compare left and right operands"
+      emit "mov rax, 0   \t\t; clear rax"
+      emit (instr + " al \t\t; save result in rax")
+
     let genBinOp op =
       match op with
       | Add -> emit "add rax, rcx"
       | Sub -> emit "sub rax, rcx"
       | Mul -> emit "mul rcx"
       | Div -> emit "div rcx"
-      | _   -> failwith "not implemented"
+      | _   -> genComparisonOp op
 
     let genIntExp intVal env =
       emit ("mov rax, " + intVal.ToString())

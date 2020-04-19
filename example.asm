@@ -28,29 +28,14 @@ func_main:
 	mov rbp, rsp
 
 	; function body
-	mov rax, 2
-	push rax  		; push arg
 	mov rax, 1
-	push rax  		; push arg
-	call func_add
-	add rsp, 16		; clean up stack space for 2 args
-	push rax      		; initialize new variable: a
-	mov rax, 4
-	push rax  		; push arg
-	mov rax, 3
-	push rax  		; push arg
-	call func_add
-	add rsp, 16		; clean up stack space for 2 args
-	push rax      		; initialize new variable: b
-	mov rax, 5
-	mov rcx, rax  		; move value to test into rcx
-	xor rax, rax  		; clear rax
-	test rcx, rcx 		; bitwise AND rcx with itself
-	setz al       		; set rax to 1 if rcx == 0, otherwise set to 0
-	mov rcx, rax  		; move value to test into rcx
-	xor rax, rax  		; clear rax
-	test rcx, rcx 		; bitwise AND rcx with itself
-	setz al       		; set rax to 1 if rcx == 0, otherwise set to 0
+	push rax     		; save left operand
+	mov rax, 1
+	mov rcx, rax 		; move right operand into rcx
+	pop rax      		; restore left operand
+	cmp rax, rcx 		; compare left and right operands
+	mov rax, 0   		; clear rax
+	setne al 		; save result in rax
 	
 	; function epilogue
 	mov rsp, rbp
