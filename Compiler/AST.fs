@@ -59,7 +59,7 @@ type param = Param of type_specifier * id
 type fun_decl = {
   id: id
   funType: type_specifier
-  parameters: param list
+  paramList: param list
   body: statement
 }
 

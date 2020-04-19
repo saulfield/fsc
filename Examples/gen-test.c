@@ -2,14 +2,12 @@
 int x = 3;
 int y = 5;
 
-/*
 int add(int x, int y) {
-  return 0;
+  return x + y;
 }
-*/
 
 int main(void) {
-  int z = y + 2;
-  z = z + 1;
-  return z;
+  int a = add(1, 2);
+  int b = add(3, 4);
+  return a + b;
 }

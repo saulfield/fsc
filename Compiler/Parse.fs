@@ -249,7 +249,7 @@ let parseFunDecl declType ident tokens =
   let tokens' = expect TkCloseParen tokens'
   let blockItems,tokens' = parseBlock tokens'
 
-  {id=ident; parameters=parameters; body=blockItems; funType=declType}, tokens'
+  {id=ident; paramList=parameters; body=blockItems; funType=declType}, tokens'
   
 let parseTopLevel (tokens: Token list) =
   let declType = getTypeFromToken tokens.Head
