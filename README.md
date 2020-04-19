@@ -2,14 +2,9 @@
 
 This is a compiler for a subset of C, generating x64 assembly.
 
-# Limitations
+Code generation is done naively, stack machine style. However, there are a few small optimizations such as constant-folding.
 
-- Only `int` type allowed
-- No preprocessor
-
-# TODO
-
-- constant folding
+You can try it out for yourself by running `dotnet run --project Compiler\Compiler.fsproj` from the base repo directory to compile the file `Examples/gen-test.c` and output the file `Examples/example.asm`. Then run `./run.sh` to assemble, link, and run the program, and echo its return code.
 
 # References
 

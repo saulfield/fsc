@@ -19,7 +19,7 @@ let main argv =
   let asm = gen ast
   printfn "%s" asm
 
-  let asmFilePath = __SOURCE_DIRECTORY__ + "/../example.asm"
+  let asmFilePath = __SOURCE_DIRECTORY__ + "/../Examples/example.asm"
   let writer = new IO.StreamWriter(path=asmFilePath)
   writer.Write asm
   writer.Close()

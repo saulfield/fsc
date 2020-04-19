@@ -7,9 +7,10 @@ int add(int x, int y) {
 }
 
 int main(void) {
-  int z = 0;
+  int max = 1 + 6/3 + 5*2;
+  int z = add(add(1, 2), 3);
 
-  while (z < 5) {
+  while (z < max) {
     z = z + 1;
   }
 

@@ -28,13 +28,25 @@ func_main:
 	mov rbp, rsp
 
 	; function body
-	mov rax, 0
+	mov rax, 13
+	push rax      		; initialize new variable: max
+	mov rax, 3
+	push rax  		; push arg
+	mov rax, 2
+	push rax  		; push arg
+	mov rax, 1
+	push rax  		; push arg
+	call func_add
+	add rsp, 16		; clean up stack space for 2 args
+	push rax  		; push arg
+	call func_add
+	add rsp, 16		; clean up stack space for 2 args
 	push rax      		; initialize new variable: z
 .L0:
 	; while loop start
-	mov rax, [rbp - 8]	; get local variable: z
+	mov rax, [rbp - 16]	; get local variable: z
 	push rax     		; save left operand
-	mov rax, 5
+	mov rax, [rbp - 8]	; get local variable: max
 	mov rcx, rax 		; move right operand into rcx
 	pop rax      		; restore left operand
 	cmp rax, rcx 		; compare left and right operands
@@ -42,17 +54,17 @@ func_main:
 	setl al 		; save result in rax
 	cmp rax, 0
 	je .L1
-	mov rax, [rbp - 8]	; get local variable: z
+	mov rax, [rbp - 16]	; get local variable: z
 	push rax     		; save left operand
 	mov rax, 1
 	mov rcx, rax 		; move right operand into rcx
 	pop rax      		; restore left operand
 	add rax, rcx
-	mov [rbp + -8], rax	; assign local variable or arg
+	mov [rbp + -16], rax	; assign local variable or arg
 	jmp .L0
 .L1:
 	; while loop end
-	mov rax, [rbp - 8]	; get local variable: z
+	mov rax, [rbp - 16]	; get local variable: z
 	
 	; function epilogue
 	mov rsp, rbp

@@ -52,6 +52,24 @@ let gen (ast:program) =
       | Some nextEnv -> lookupFunc name nextEnv
       | None -> failwithf "function not found: %s" name
      
+  let rec constantFold exp =
+    let evalBinExp op left right =
+      match op with
+      | Add -> IntExp (left + right)
+      | Sub -> IntExp (left - right)
+      | Mul -> IntExp (left * right)
+      | Div -> IntExp (left / right)
+      | _   -> failwith "must be an arithmetic op"
+
+    let visitBinaryExp exp =
+      match exp with
+      | BinExp (IntExp left, op, IntExp right) -> evalBinExp op left right
+      | _ -> exp
+
+    match exp with
+    | BinExp (left, op, right) -> visitBinaryExp (BinExp (constantFold left, op, constantFold right))
+    | _ -> exp
+
   let rec genExp exp env =
     let genComparisonOp op =
       let instr =
@@ -133,12 +151,13 @@ let gen (ast:program) =
       emit ("add rsp, " + offset + comment)
       env
 
-    match exp with
-      | IntExp intVal                 -> genIntExp intVal env
-      | VarExp (ID name)              -> genVarExp name env
-      | UnaryExp(op,exp)              -> genUnaryExp op exp env          
-      | BinExp(exp1, op, exp2)        -> genBinExp exp1 op exp2 env          
-      | FunCallExp (ID name, expList) -> genFuncCall name expList env
+    let newExp = constantFold exp
+    match newExp with
+    | IntExp intVal                 -> genIntExp intVal env
+    | VarExp (ID name)              -> genVarExp name env
+    | UnaryExp(op,exp)              -> genUnaryExp op exp env          
+    | BinExp(exp1, op, exp2)        -> genBinExp exp1 op exp2 env          
+    | FunCallExp (ID name, expList) -> genFuncCall name expList env
        
   let rec genStmt stmt env =
     let genAssignStmt name exp env =
