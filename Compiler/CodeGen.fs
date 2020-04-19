@@ -62,10 +62,16 @@ let gen (ast:program) =
     let genUnaryExp op exp env =
       match op with
       | Neg ->
-        genExp exp env |> ignore
-        emit "neg rax"
-        env
-      | _ -> failwith "not implemented"
+          genExp exp env |> ignore
+          emit "neg rax"
+          env
+      | Not ->
+          genExp exp env |> ignore
+          emit "mov rcx, rax  \t\t; move value to test into rcx"
+          emit "xor rax, rax  \t\t; clear rax"
+          emit "test rcx, rcx \t\t; bitwise AND rcx with itself"
+          emit "setz al       \t\t; set rax to 1 if rcx == 0, otherwise set to 0"
+          env
 
     let genBinExp exp1 op exp2 env =
       genExp exp1 env |> ignore
@@ -235,18 +241,16 @@ let gen (ast:program) =
     | [] -> env
     | tl::tls -> genTopLevels tls (genTopLevel tl env)
 
-  let globalEnv = { vars=Map.empty; functions=Map.empty; outerEnv=None }
-
   // emit code
   emit "; code"
   emit "section .text"
+  let globalEnv = { vars=Map.empty; functions=Map.empty; outerEnv=None }
   let env =
     match ast with
     | AST.Program(program) -> genTopLevels program globalEnv
 
   // entry point
   let mainFunc = lookupFunc "main" env
-
   emit ""
   emit "; entry point"
   emit "global _start"
@@ -266,5 +270,6 @@ let gen (ast:program) =
     | _ -> failwith "expected global variable"
   sbFinal.Append "\n" |> ignore
 
+  // combine the 2 asm parts into 1
   sbFinal.Append (sb.ToString()) |> ignore
   sbFinal.ToString()

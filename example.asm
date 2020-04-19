@@ -42,12 +42,15 @@ func_main:
 	call func_add
 	add rsp, 16		; clean up stack space for 2 args
 	push rax      		; initialize new variable: b
-	mov rax, [rbp - 8]	; get local variable: a
-	push rax     		; save left operand
-	mov rax, [rbp - 16]	; get local variable: b
-	mov rcx, rax 		; move right operand into rcx
-	pop rax      		; restore left operand
-	add rax, rcx
+	mov rax, 5
+	mov rcx, rax  		; move value to test into rcx
+	xor rax, rax  		; clear rax
+	test rcx, rcx 		; bitwise AND rcx with itself
+	setz al       		; set rax to 1 if rcx == 0, otherwise set to 0
+	mov rcx, rax  		; move value to test into rcx
+	xor rax, rax  		; clear rax
+	test rcx, rcx 		; bitwise AND rcx with itself
+	setz al       		; set rax to 1 if rcx == 0, otherwise set to 0
 	
 	; function epilogue
 	mov rsp, rbp

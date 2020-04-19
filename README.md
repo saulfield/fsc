@@ -9,7 +9,6 @@ This is a compiler for a subset of C, generating x64 assembly.
 
 # TODO
 
-- unary ! operator
 - if-statement codegen
 - while loop codegen
 - constant folding
